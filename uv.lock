@@ -766,7 +766,7 @@ wheels = [
 
 [[package]]
 name = "rmk8soperator"
-version = "0.1.0"
+version = "0.1.0+260912"
 source = { editable = "." }
 dependencies = [
     { name = "click" },

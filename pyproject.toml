@@ -1,6 +1,6 @@
 [project]
 name = "rmk8soperator"
-version = "0.1.0"
+version = "0.1.0+260912"
 description = "K8s Operator and CRDs with core RASENMAEHER entities"
 authors = [{name="Eero af Heurlin", email="eero.afheurlin@iki.fi" }]
 homepage = "https://github.com/pvarki/python-rasenmaeher-k8soperator"

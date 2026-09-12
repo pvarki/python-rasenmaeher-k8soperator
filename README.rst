@@ -112,12 +112,12 @@ There's a "production" target as well for running the application. Tag the image
 with the project version::
 
     # Docker
-    docker build --add-host=host.docker.internal:host-gateway --ssh default --target production -t rmk8soperator:0.1.0 .
-    docker run --add-host=host.docker.internal:host-gateway -it --name rmk8soperator rmk8soperator:0.1.0
+    docker build --add-host=host.docker.internal:host-gateway --ssh default --target production -t rmk8soperator:0.1.0-260912 .
+    docker run --add-host=host.docker.internal:host-gateway -it --name rmk8soperator rmk8soperator:0.1.0-260912
 
     # Podman alternative
-    podman build --add-host=host.docker.internal:host-gateway --ssh default --target production -t rmk8soperator:0.1.0 .
-    podman run --add-host=host.docker.internal:host-gateway -it --name rmk8soperator rmk8soperator:0.1.0
+    podman build --add-host=host.docker.internal:host-gateway --ssh default --target production -t rmk8soperator:0.1.0-260912 .
+    podman run --add-host=host.docker.internal:host-gateway -it --name rmk8soperator rmk8soperator:0.1.0-260912
 
 Alpine considerations
 ^^^^^^^^^^^^^^^^^^^^^
@@ -194,12 +194,20 @@ development tools. Commit both pyproject.toml and uv.lock after dependency chang
 Run ``uv lock`` after manually editing dependencies, and ``uv build`` to produce
 wheel and source distributions.
 
-Bump the project version with bump-my-version::
+Versions follow pvarki's Python convention ``MAJOR.MINOR.PATCH+YYMMDD``.
+The ``release`` part records the release date and updates automatically when
+bumping major, minor or patch. Container tags use ``-`` instead of ``+``;
+the shared publisher normalizes this, and bump-my-version keeps the README's
+local image tags in the same format.
 
+Preview or bump the project version with bump-my-version::
+
+    uv run --locked bump-my-version show-bump
     uv run --locked bump-my-version bump patch
     uv lock
 
-Use ``minor`` or ``major`` instead of ``patch`` as needed. The configuration in
+Use ``minor`` or ``major`` instead of ``patch`` as needed, or ``release`` to
+refresh only the date on a later day. The configuration in
 .bumpversion.toml updates the package metadata, module version, version test,
 and production image tags in this README. Commit these changes together with
 uv.lock; version bumping does not automatically create a commit or Git tag.
