@@ -208,6 +208,12 @@ The registry retains the name ``ctlptl-registry`` to reuse existing image data.
 Host pushes use ``localhost:5005``; kind's containerd redirects pulls to the
 registry container over the ``kind`` network.
 
+Tilt uses Podman to build and push when the provider is ``podman``. Only the
+local registry push disables TLS verification. The development image includes
+Tilt's restart wrapper, so source sync and process restarts do not need Docker's
+API or a Docker-compatible Podman socket. With ``docker``, Tilt uses Docker's
+builder for the same development image.
+
 ``task`` with no arguments lists tasks. ``task up`` starts the registry, the
 kind cluster, and Tilt. ``task down`` stops Tilt and deletes the cluster but
 leaves the registry running. ``task clean`` also removes the registry.

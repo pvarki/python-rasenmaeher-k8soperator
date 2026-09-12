@@ -175,6 +175,7 @@ ENTRYPOINT ["/bin/zsh", "-l"]
 # Tilt live_update: editable install, process restart     #
 ##########################################################
 FROM builder_base as tilt
+COPY --from=docker.io/tiltdev/restart-helper:2025-02-17 /tilt-restart-wrapper /entr /
 COPY ./docker/entrypoint.sh /docker-entrypoint.sh
 COPY ./uv.lock ./pyproject.toml ./README.rst /app/
 COPY ./src /app/src/
@@ -183,5 +184,7 @@ WORKDIR /app
 RUN --mount=type=ssh . /.venv/bin/activate \
     && uv sync --locked --no-dev \
     && chmod a+x /docker-entrypoint.sh \
+    && touch /tmp/.restart-proc \
+    && chmod 666 /tmp/.restart-proc \
     && true
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/tilt-restart-wrapper", "--watch_file=/tmp/.restart-proc", "/docker-entrypoint.sh"]

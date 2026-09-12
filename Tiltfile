@@ -1,16 +1,16 @@
 # -*- mode: Python -*-
-# Local operator loop: ctlptl kind cluster + live_update image.
+# Local operator loop: kind cluster + local registry + live_update image.
 #
 # Start with `task up` (registry + kind-rmk8soperator + Tilt). Manifests are
 # tilt/registry.yaml and tilt/cluster.yaml. Image name must match
 # `rmk8soperator manifests --image`. live_update follows
-# https://docs.tilt.dev/example_python.html ; docker_build_with_restart
-# is used because this process does not auto-reload like Flask.
+# https://docs.tilt.dev/example_python.html ; the tilt image includes a restart
+# wrapper because this process does not auto-reload like Flask.
 #
 # cert-manager issues the local CA; export-webhook-ca writes tilt/.certs/ca.crt
 # for `rmk8soperator manifests --image --ca-file` (Service, Deployment, admission).
 
-load("ext://restart_process", "docker_build_with_restart")
+load("ext://podman", "podman_build")
 load("ext://namespace", "namespace_create")
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
@@ -19,8 +19,15 @@ OPERATOR_IMAGE = "rmk8soperator"
 KIND_CONTEXT = "kind-rmk8soperator"
 CA_FILE = "tilt/.certs/ca.crt"
 CERT_MANAGER_VERSION = "v1.21.1"
+RUNTIME = os.getenv("KIND_EXPERIMENTAL_PROVIDER", "podman")
+if RUNTIME not in ["docker", "podman"]:
+    fail("KIND_EXPERIMENTAL_PROVIDER must be docker or podman")
+if RUNTIME == "podman":
+    docker_prune_settings(disable=True)
 
 allow_k8s_contexts(KIND_CONTEXT)
+if k8s_context() != KIND_CONTEXT:
+    fail("Use task tilt:up or tilt up --context %s" % KIND_CONTEXT)
 # The cert-manager chart install needs more than the 30s default.
 update_settings(k8s_upsert_timeout_secs=180)
 namespace_create(OPERATOR_NS)
@@ -107,19 +114,30 @@ live_update_steps = [
         "uv sync --locked --no-dev",
         trigger=["./pyproject.toml", "./uv.lock"],
     ),
+    run("date > /tmp/.restart-proc"),
 ]
 
-# The Dockerfile's --mount=type=ssh steps need no forwarded agent: every
-# dependency resolves from PyPI over HTTPS.
-docker_build_with_restart(
-    OPERATOR_IMAGE,
-    ".",
-    dockerfile="Dockerfile_alpine",
-    target="tilt",
-    entrypoint=["/docker-entrypoint.sh"],
-    only=["src", "pyproject.toml", "uv.lock", "README.rst", "docker"],
-    live_update=live_update_steps,
-)
+image_deps = ["src", "pyproject.toml", "uv.lock", "README.rst", "docker"]
+# podman_build_with_restart still uses Docker for its wrapper image. Build the
+# wrapper in the Dockerfile instead so both the build and push use Podman.
+if RUNTIME == "podman":
+    podman_build(
+        OPERATOR_IMAGE,
+        ".",
+        extra_flags=["--file", "Dockerfile_alpine", "--target", "tilt"],
+        push_extra_flags=["--tls-verify=false"],
+        deps=image_deps + ["Dockerfile_alpine", ".dockerignore"],
+        live_update=live_update_steps,
+    )
+else:
+    docker_build(
+        OPERATOR_IMAGE,
+        ".",
+        dockerfile="Dockerfile_alpine",
+        target="tilt",
+        only=image_deps,
+        live_update=live_update_steps,
+    )
 
 k8s_resource(
     "opendefense-platform",

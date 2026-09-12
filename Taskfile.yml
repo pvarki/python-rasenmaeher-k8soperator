@@ -55,11 +55,11 @@ tasks:
     aliases:
       - t:u
     cmds:
-      - tilt up
+      - tilt up --context kind-rmk8soperator
 
   tilt:down:
     desc: Stop Tilt resources
     aliases:
       - t:d
-    cmd: tilt down
+    cmd: tilt down --context kind-rmk8soperator
     ignore_error: true # sometimes cleanup might not be clean
