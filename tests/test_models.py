@@ -92,5 +92,5 @@ def test_demo_manifests_parse_as_typed_resources() -> None:
         assert parsed.metadata.name
     assert kinds[Role] == 3
     assert kinds[Group] == 1
-    assert kinds[User] == 1
+    assert kinds[User] == 2
     assert kinds[Invite] == 1
