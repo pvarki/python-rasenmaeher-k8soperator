@@ -5,7 +5,6 @@ from typing import Annotated
 from pydantic import Field
 
 from cloudcoil.apimachinery import Condition, Time
-from cloudcoil.controller import ReconcileStatus
 from cloudcoil.crd import ListType
 from cloudcoil.pydantic import BaseModel
 
@@ -60,7 +59,7 @@ class ResolvedRef(BaseModel):
     )
 
 
-class PlatformStatus(ReconcileStatus):
+class PlatformStatus(BaseModel):
     """Ready conditions and observedGeneration for platform resources."""
 
     conditions: Annotated[list[PlatformCondition], ListType("map", keys=("type",))] = Field(
