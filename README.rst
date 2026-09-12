@@ -269,17 +269,19 @@ Tilt with Docker. Docker Desktop on macOS and both WSL2 configurations still
 need an end-to-end run on those hosts.
 
 Override a platform default with ``KIND_EXPERIMENTAL_PROVIDER=docker`` or
-``KIND_EXPERIMENTAL_PROVIDER=podman``. Keep the same setting for every lifecycle
-command, including ``task down`` and ``task clean``. Before changing engines,
-exit Tilt and run ``task clean`` with the old provider still selected. This
+``KIND_EXPERIMENTAL_PROVIDER=podman``; unset it to restore the default.
+Keep the same setting for every lifecycle command, including ``task down``
+and ``task clean``. Before changing engines, exit Tilt and run ``task clean``
+with the old provider still selected. This
 deletes the old development cluster and registry, releases port 5005, and
 removes the exported CA. Then select the new provider and run ``task up``.
 Both providers use the same kube context and CA path, so this checkout runs
 one development cluster at a time.
 
-The tasks and Tilt use the same provider selection. Cluster creation uses kind
-directly and does not require ctlptl. Repeated ``task cluster:up`` reuses the
-cluster and repairs its registry connection.
+``Taskfile.yml`` selects the provider with Task's native ``OS`` function and
+exports it to kind. ``task runtime`` prints the selected provider; Tilt uses
+the same task. Repeated ``task cluster:up`` reuses the cluster and repairs its
+registry connection.
 ``tilt/Taskfile.cluster.yml`` calls kind's create, export, and delete commands
 directly, using its default single-node cluster and ``--wait`` for startup
 readiness. Task's ``status`` checks skip creation when the cluster or registry
@@ -289,7 +291,7 @@ registry configuration required by `kind's local registry setup
 <https://kind.sigs.k8s.io/docs/user/local-registry/>`_. The containerd settings
 are in ``tilt/registry-hosts.toml`` and Tilt's registry discovery metadata is in
 ``tilt/registry.yaml``.
-The registry retains the name ``ctlptl-registry`` to reuse existing image data.
+The development registry is named ``rmk8soperator-registry``.
 Host pushes use ``localhost:5005``; kind's containerd redirects pulls to the
 registry container over the ``kind`` network.
 

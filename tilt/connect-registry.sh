@@ -4,9 +4,9 @@
 set -euo pipefail
 runtime="${KIND_EXPERIMENTAL_PROVIDER:?Run task cluster:up}"
 
-connected="$("${runtime}" inspect -f '{{with index .NetworkSettings.Networks "kind"}}true{{end}}' ctlptl-registry)"
+connected="$("${runtime}" inspect -f '{{with index .NetworkSettings.Networks "kind"}}true{{end}}' rmk8soperator-registry)"
 if [[ "${connected}" != true ]]; then
-  "${runtime}" network connect kind ctlptl-registry
+  "${runtime}" network connect kind rmk8soperator-registry
 fi
 
 nodes="$(kind get nodes --name rmk8soperator)"

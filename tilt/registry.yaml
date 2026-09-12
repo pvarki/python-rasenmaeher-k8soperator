@@ -7,5 +7,5 @@ metadata:
 data:
   localRegistryHosting.v1: |
     host: "localhost:5005"
-    hostFromClusterNetwork: "ctlptl-registry:5000"
+    hostFromClusterNetwork: "rmk8soperator-registry:5000"
     help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
