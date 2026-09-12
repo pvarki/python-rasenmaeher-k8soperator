@@ -271,8 +271,8 @@ need an end-to-end run on those hosts.
 Override a platform default with ``KIND_EXPERIMENTAL_PROVIDER=docker`` or
 ``KIND_EXPERIMENTAL_PROVIDER=podman``; unset it to restore the default.
 Keep the same setting for every lifecycle command, including ``task down``
-and ``task clean``. Before changing engines, exit Tilt and run ``task clean``
-with the old provider still selected. This
+and ``task clean``. Before changing engines, run ``task clean`` with the old
+provider still selected. This
 deletes the old development cluster and registry, releases port 5005, and
 removes the exported CA. Then select the new provider and run ``task up``.
 Both providers use the same kube context and CA path, so this checkout runs
@@ -302,10 +302,23 @@ API or a Docker-compatible Podman socket. With ``docker``, Tilt uses Docker's
 builder for the same development image.
 
 ``task`` with no arguments lists tasks. ``task up`` starts the registry, the
-kind cluster, and Tilt. Exit Tilt with Ctrl+C before cleanup. ``task down``
-deletes the cluster and its exported CA but leaves the registry running.
-``task clean`` also removes the registry. ``task tilt:down`` deletes only the
-Tilt-managed resources while keeping the cluster.
+kind cluster, and Tilt. ``task down`` sends a stop signal to this checkout's
+Tilt process and immediately deletes the cluster and its exported CA. The
+registry remains running. ``task clean`` also removes the registry. Both
+commands work from a second terminal while ``task up`` is running.
+
+``task tilt:stop`` stops only Tilt, keeping the cluster and workloads.
+``task tilt:down`` stops Tilt and deletes its managed resources while keeping
+the cluster. Tilt's own ``tilt down`` command only deletes resources; it does
+not stop a running ``tilt up`` process or release its web port.
+
+If startup reports that port 10350 is already in use, run ``task tilt:stop``
+before retrying ``task up``. Teardown checks the session's Tiltfile path and
+refuses to stop a different checkout's Tilt. To run beside another project,
+set ``TILT_PORT`` to a free port and retain that setting for up and down::
+
+    export TILT_PORT=10351
+    task up
 
 Cluster and registry have short aliases: ``task c:up`` / ``task c:d`` and
 ``task r:up`` / ``task r:d`` (also ``c:u``, ``r:u``).
