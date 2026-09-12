@@ -280,6 +280,15 @@ one development cluster at a time.
 The tasks and Tilt use the same provider selection. Cluster creation uses kind
 directly and does not require ctlptl. Repeated ``task cluster:up`` reuses the
 cluster and repairs its registry connection.
+``tilt/Taskfile.cluster.yml`` calls kind's create, export, and delete commands
+directly, using its default single-node cluster and ``--wait`` for startup
+readiness. Task's ``status`` checks skip creation when the cluster or registry
+already exists.
+``tilt/connect-registry.sh`` contains only the network connection and per-node
+registry configuration required by `kind's local registry setup
+<https://kind.sigs.k8s.io/docs/user/local-registry/>`_. The containerd settings
+are in ``tilt/registry-hosts.toml`` and Tilt's registry discovery metadata is in
+``tilt/registry.yaml``.
 The registry retains the name ``ctlptl-registry`` to reuse existing image data.
 Host pushes use ``localhost:5005``; kind's containerd redirects pulls to the
 registry container over the ``kind`` network.

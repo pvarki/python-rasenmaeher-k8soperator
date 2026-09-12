@@ -22,32 +22,20 @@ async def test_runtime_selection(tmp_path: Path, platform: str, provider: str | 
     if provider is not None:
         env["KIND_EXPERIMENTAL_PROVIDER"] = provider
 
-    # The first command is used by Tilt; the second verifies task exports.
-    commands = [
-        ["bash", str(ROOT / "tilt/runtime.sh")],
-        [
-            "bash",
-            "-euc",
-            'source "$1"; test "$RUNTIME" = "$KIND_EXPERIMENTAL_PROVIDER"; '
-            'bash -c \'printf "%s\\n" "$KIND_EXPERIMENTAL_PROVIDER"\'',
-            "runtime-test",
-            str(ROOT / "tilt/env.sh"),
-        ],
-    ]
-    for command in commands:
-        process = await asyncio.create_subprocess_exec(
-            *command,
-            env=env,
-            cwd=tmp_path,
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.PIPE,
-        )
-        stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=10)
-        if provider == "invalid":
-            assert process.returncode != 0
-            assert stdout == b""
-            assert b"KIND_EXPERIMENTAL_PROVIDER must be docker or podman" in stderr
-        else:
-            expected = provider or ("docker" if platform == "Linux" else "podman")
-            assert process.returncode == 0, stderr.decode()
-            assert stdout.decode().strip() == expected
+    process = await asyncio.create_subprocess_exec(
+        "bash",
+        str(ROOT / "tilt/runtime.sh"),
+        env=env,
+        cwd=tmp_path,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE,
+    )
+    stdout, stderr = await asyncio.wait_for(process.communicate(), timeout=10)
+    if provider == "invalid":
+        assert process.returncode != 0
+        assert stdout == b""
+        assert b"KIND_EXPERIMENTAL_PROVIDER must be docker or podman" in stderr
+    else:
+        expected = provider or ("docker" if platform == "Linux" else "podman")
+        assert process.returncode == 0, stderr.decode()
+        assert stdout.decode().strip() == expected

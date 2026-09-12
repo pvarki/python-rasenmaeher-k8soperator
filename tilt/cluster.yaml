@@ -1,7 +1,0 @@
-# kind cluster for local Tilt development (kind v0.27+ node images).
-# Create: task cluster:up (or task c:up)
-# Delete: task cluster:down (or task c:d)
-apiVersion: kind.x-k8s.io/v1alpha4
-kind: Cluster
-nodes:
-  - role: control-plane

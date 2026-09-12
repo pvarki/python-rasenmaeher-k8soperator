@@ -1,8 +1,8 @@
 # -*- mode: Python -*-
 # Local operator loop: kind cluster + local registry + live_update image.
 #
-# Start with `task up` (registry + kind-rmk8soperator + Tilt). Manifests are
-# tilt/registry.yaml and tilt/cluster.yaml. Image name must match
+# Start with `task up` (registry + kind-rmk8soperator + Tilt). The lifecycle
+# commands are in tilt/Taskfile.*.yml. Image name must match
 # `rmk8soperator manifests --image`. live_update follows
 # https://docs.tilt.dev/example_python.html ; the tilt image includes a restart
 # wrapper because this process does not auto-reload like Flask.
