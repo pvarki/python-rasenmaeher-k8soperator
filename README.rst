@@ -131,42 +131,6 @@ There are a few potential issues however:
     and do not explicitly request them to be enabled.
   - Commit uv.lock; Docker builds use uv sync --locked to detect stale dependency metadata.
 
-
-Continuous integration
-----------------------
-
-The workflows in .github/workflows use shared actions from
-`pvarki/config-ci-library <https://github.com/pvarki/config-ci-library>`_, following
-`python-mediamtx-rmmtxauthz <https://github.com/pvarki/python-mediamtx-rmmtxauthz/tree/main/.github/workflows>`_.
-
-Pull requests validate the version bump and project metadata, run prek, test
-Python 3.12, 3.13 and 3.14, build Python distributions, and build both container
-variants. JUnit results are saved as artifacts. Snyk checks dependencies using
-the ``deployapp-products`` organization. The version must differ from the PR's
-base branch; use the version bump commands below and commit uv.lock with it.
-
-After the version, setup, prek, test and Docker checks pass, same-repository PRs
-publish preview images. Pushes to main publish release images and run Snyk
-monitoring. As in the example, Snyk runs independently of publishing. Fork PRs
-run checks without publishing, Snyk credentials or writing JUnit check reports.
-Manual runs of the PR workflow run checks without requiring a version bump or
-publishing; manual publishing through the main workflow is limited to main.
-
-The image name is ``pvarki/rasenmaeher-worker`` (product ``rasenmaeher``, component
-``worker``). The shared publisher derives version and PR tags from
-.bumpversion.toml and publishes to GHCR, Docker Hub and ACR. Configure these
-repository or organization settings before running the workflows:
-
-- Variables: ``DOCKERHUB_USERNAME``, ``ACR_REPO`` (registry hostname), ``ACR_USERNAME``.
-- Secrets: ``DOCKERHUB_TOKEN``, ``ACR_TOKEN``, ``SNYK_TOKEN``.
-- GitHub supplies ``GITHUB_TOKEN``; publishing jobs request ``packages: write``.
-
-All referenced registry credentials must be populated. To disable Docker Hub
-or ACR, remove all inputs for that registry from both publishing jobs; passing
-empty values makes the shared action fail. Shared pvarki actions track ``main``
-to receive common CI updates.
-
-
 Development
 -----------
 
