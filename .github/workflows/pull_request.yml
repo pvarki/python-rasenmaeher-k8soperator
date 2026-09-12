@@ -113,12 +113,12 @@ jobs:
       - uses: actions/checkout@v6
       - name: Build test target
         run: >-
-          docker build --add-host=host.docker.internal:host-gateway
+          docker build
           --target test --file Dockerfile_${{ matrix.variant }}
           --tag rmk8soperator:test-${{ matrix.variant }} .
       - name: Build production target
         run: >-
-          docker build --add-host=host.docker.internal:host-gateway
+          docker build
           --target production --file Dockerfile_${{ matrix.variant }}
           --tag rmk8soperator:production-${{ matrix.variant }} .
 
