@@ -26,6 +26,7 @@ tasks:
   down:
     desc: Delete the kind development cluster
     aliases: [d]
+    deps: [":runtime"]
     cmds:
       - kind delete cluster --name rmk8soperator
       - rm -f .certs/ca.crt

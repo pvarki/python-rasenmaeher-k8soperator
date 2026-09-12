@@ -4,6 +4,7 @@ tasks:
   up:
     desc: Start the local container registry
     aliases: [u]
+    deps: [":runtime"]
     cmds:
       - '"{{.RUNTIME}}" info > /dev/null'
       - task: create
@@ -20,6 +21,7 @@ tasks:
   down:
     desc: Stop and remove the local container registry
     aliases: [d]
+    deps: [":runtime"]
     preconditions:
       - '"{{.RUNTIME}}" info > /dev/null'
     status:

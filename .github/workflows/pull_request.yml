@@ -122,6 +122,32 @@ jobs:
           --target production --file Dockerfile_${{ matrix.variant }}
           --tag rmk8soperator:production-${{ matrix.variant }} .
 
+  runtime-selection:
+    name: Container runtime on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            runtime: docker
+          - os: macos-latest
+            runtime: podman
+          - os: windows-latest
+            runtime: docker
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: task
+      - name: Check native defaults and explicit overrides
+        shell: bash
+        run: |
+          test "$(task --silent runtime)" = '${{ matrix.runtime }}'
+          test "$(KIND_EXPERIMENTAL_PROVIDER=docker task --silent runtime)" = docker
+          test "$(KIND_EXPERIMENTAL_PROVIDER=podman task --silent runtime)" = podman
+          if KIND_EXPERIMENTAL_PROVIDER=invalid task --silent runtime; then exit 1; fi
+          if KIND_EXPERIMENTAL_PROVIDER= task --silent runtime; then exit 1; fi
+
   docker-dev-environment:
     name: kind and Tilt on Linux Docker
     runs-on: ubuntu-latest
@@ -131,7 +157,7 @@ jobs:
       - uses: jdx/mise-action@v4
       - name: Create and reuse the cluster with the Linux default
         run: |
-          test "$(bash tilt/runtime.sh)" = docker
+          test "$(task --silent runtime)" = docker
           docker info
           task cluster:up
           task cluster:up
@@ -169,7 +195,7 @@ jobs:
 
   publish:
     name: Publish Docker image
-    needs: [version-check, check-project-setup, pre-commit, test, docker-build-and-verify, docker-dev-environment]
+    needs: [version-check, check-project-setup, pre-commit, test, docker-build-and-verify, runtime-selection, docker-dev-environment]
     if: >-
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository

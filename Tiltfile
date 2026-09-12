@@ -19,8 +19,8 @@ OPERATOR_IMAGE = "rmk8soperator"
 KIND_CONTEXT = "kind-rmk8soperator"
 CA_FILE = "tilt/.certs/ca.crt"
 CERT_MANAGER_VERSION = "v1.21.1"
-watch_file("tilt/runtime.sh")
-RUNTIME = str(local(["bash", "tilt/runtime.sh"], quiet=True)).strip()
+watch_file("Taskfile.yml")
+RUNTIME = str(local(["task", "--silent", "runtime"], quiet=True)).strip()
 if RUNTIME == "podman":
     docker_prune_settings(disable=True)
 # Host bytecode must neither trigger restarts nor be synced into the container.
@@ -119,8 +119,7 @@ live_update_steps = [
 ]
 
 image_deps = ["src", "pyproject.toml", "uv.lock", "README.rst", "docker"]
-# podman_build_with_restart still uses Docker for its wrapper image. Build the
-# wrapper in the Dockerfile instead so both the build and push use Podman.
+# Both builders use the restart wrapper included in the development image.
 if RUNTIME == "podman":
     podman_build(
         OPERATOR_IMAGE,
