@@ -19,9 +19,8 @@ OPERATOR_IMAGE = "rmk8soperator"
 KIND_CONTEXT = "kind-rmk8soperator"
 CA_FILE = "tilt/.certs/ca.crt"
 CERT_MANAGER_VERSION = "v1.21.1"
-RUNTIME = os.getenv("KIND_EXPERIMENTAL_PROVIDER", "podman")
-if RUNTIME not in ["docker", "podman"]:
-    fail("KIND_EXPERIMENTAL_PROVIDER must be docker or podman")
+watch_file("tilt/runtime.sh")
+RUNTIME = str(local(["bash", "tilt/runtime.sh"], quiet=True)).strip()
 if RUNTIME == "podman":
     docker_prune_settings(disable=True)
 # Host bytecode must neither trigger restarts nor be synced into the container.

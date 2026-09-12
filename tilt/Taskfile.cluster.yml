@@ -3,6 +3,10 @@ version: "3"
 tasks:
   up:
     desc: Start the kind development cluster
+    summary: |
+      Uses Docker Engine on Linux and Podman on macOS by default.
+      Set KIND_EXPERIMENTAL_PROVIDER=docker or podman to override the provider
+      for cluster, registry, and Tilt commands.
     aliases: [u]
     cmds:
       - task: :registry:up

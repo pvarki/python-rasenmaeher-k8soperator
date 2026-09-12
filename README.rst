@@ -192,18 +192,29 @@ Local cluster with Tilt
 ^^^^^^^^^^^^^^^^^^^^^^^
 
 ``mise.toml`` installs ``helm``, ``kind``, ``kubectl``, ``task``, ``tilt``, and
-``uv``. The local environment defaults to Podman; on macOS, start your Podman
-machine first. Create a kind cluster with a local registry (kube context
-``kind-rmk8soperator``), then run the operator under Tilt::
+``uv``. On Linux, the local environment defaults to standard Docker Engine.
+Start Docker and make sure ``docker info`` succeeds as your user; Docker Desktop
+and Podman are not required. Create a kind cluster with a local registry (kube
+context ``kind-rmk8soperator``), then run the operator under Tilt::
 
     mise install
+    task up
+
+On macOS, the default is Podman. Start your Podman machine first::
+
     podman machine start  # if the machine is stopped
     task up
 
-To use Docker, set ``KIND_EXPERIMENTAL_PROVIDER=docker`` for every lifecycle
-command, including ``task down`` and ``task clean``. Cluster creation uses kind
-directly and does not require ctlptl or Docker Desktop with Podman. Repeated
-``task cluster:up`` reuses the cluster and repairs its registry connection.
+Override either default with ``KIND_EXPERIMENTAL_PROVIDER=docker`` or
+``KIND_EXPERIMENTAL_PROVIDER=podman``. Keep the same setting for every lifecycle
+command, including ``task down`` and ``task clean``::
+
+    export KIND_EXPERIMENTAL_PROVIDER=docker
+    task up
+
+The tasks and Tilt use the same provider selection. Cluster creation uses kind
+directly and does not require ctlptl. Repeated ``task cluster:up`` reuses the
+cluster and repairs its registry connection.
 The registry retains the name ``ctlptl-registry`` to reuse existing image data.
 Host pushes use ``localhost:5005``; kind's containerd redirects pulls to the
 registry container over the ``kind`` network.
