@@ -6,9 +6,9 @@ tasks:
     aliases: [u]
     cmds:
       - task: :registry:up
-      - ctlptl apply -f cluster.yaml
+      - bash cluster.sh up
 
   down:
     desc: Delete the kind development cluster
     aliases: [d]
-    cmd: ctlptl delete -f cluster.yaml
+    cmd: bash cluster.sh down

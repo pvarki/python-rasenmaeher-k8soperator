@@ -21,11 +21,10 @@ tasks:
     desc: Start the local registry, kind cluster, and Tilt
     aliases: [u]
     summary: |
-      Starts the ctlptl registry, the kind cluster (kind-rmk8soperator),
+      Starts the local registry, the kind cluster (kind-rmk8soperator),
       then Tilt in the foreground. Use task down to stop Tilt and the
       cluster while leaving the registry running.
     cmds:
-      - task: registry:up
       - task: cluster:up
       - task: tilt:up
 
@@ -53,14 +52,14 @@ tasks:
   tilt:up:
     desc: Start the Tilt development environment
     interactive: true
-    aliases: 
+    aliases:
       - t:u
     cmds:
       - tilt up
 
   tilt:down:
     desc: Stop Tilt resources
-    aliases: 
+    aliases:
       - t:d
     cmd: tilt down
     ignore_error: true # sometimes cleanup might not be clean

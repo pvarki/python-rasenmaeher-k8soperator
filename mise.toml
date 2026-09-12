@@ -1,5 +1,4 @@
 [tools]
-ctlptl = "latest"
 helm = "latest"
 kind = "latest"
 kubectl = "latest"

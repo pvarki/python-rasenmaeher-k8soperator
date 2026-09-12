@@ -1,7 +1,11 @@
-# ctlptl registry for local Tilt development.
-# Create: task registry:up (or task r:up)
-# Delete: task registry:down (or task r:d)
-apiVersion: ctlptl.dev/v1alpha1
-kind: Registry
-name: ctlptl-registry
-port: 5005
+# Advertise the local registry to Tilt using the standard discovery ConfigMap.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: local-registry-hosting
+  namespace: kube-public
+data:
+  localRegistryHosting.v1: |
+    host: "localhost:5005"
+    hostFromClusterNetwork: "ctlptl-registry:5000"
+    help: "https://kind.sigs.k8s.io/docs/user/local-registry/"
