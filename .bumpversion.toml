@@ -1,0 +1,24 @@
+[tool.bumpversion]
+current_version = "0.1.0"
+commit = false
+tag = false
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "README.rst"
+search = "rmk8soperator:{current_version}"
+replace = "rmk8soperator:{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "src/rmk8soperator/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "tests/test_rmk8soperator.py"
+search = '__version__ == "{current_version}"'
+replace = '__version__ == "{new_version}"'
