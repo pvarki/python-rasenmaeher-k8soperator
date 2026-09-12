@@ -68,6 +68,11 @@ local_resource(
 )
 
 watch_file(CA_FILE)
+# On a fresh cluster, let cert-manager and export-webhook-ca run first.
+# Writing the watched CA file reloads this Tiltfile to add the operator.
+if not os.path.exists(CA_FILE):
+    exit("Waiting for cert-manager to issue the local webhook CA")
+
 watch_file("src/rmk8soperator/models")
 k8s_yaml(
     local(
@@ -123,7 +128,7 @@ k8s_resource(
         % OPERATOR_NS,
     ],
     port_forwards="8080:8080",
-    resource_deps=["operator-crds-rbac", "operator-certs"],
+    resource_deps=["operator-crds-rbac", "export-webhook-ca"],
 )
 
 k8s_yaml("examples/demo.yaml")

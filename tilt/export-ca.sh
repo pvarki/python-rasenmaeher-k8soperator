@@ -10,7 +10,7 @@ CONTEXT="${KIND_CONTEXT:-kind-rmk8soperator}"
 
 mkdir -p "${CERT_DIR}"
 kubectl --context "${CONTEXT}" wait --for=condition=Ready \
-  "certificate/operator-ca" -n "${NS}" --timeout=180s
+  "certificate/operator-ca" "certificate/operator-tls" -n "${NS}" --timeout=180s
 tmp="$(mktemp "${CERT_DIR}/ca.crt.XXXXXX")"
 trap 'rm -f "${tmp}"' EXIT
 kubectl --context "${CONTEXT}" get secret operator-ca -n "${NS}" \
