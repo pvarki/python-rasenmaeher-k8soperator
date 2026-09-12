@@ -1,5 +1,13 @@
 version: "3"
 
+vars:
+  RUNTIME:
+    sh: bash "{{.ROOT_DIR}}/tilt/runtime.sh"
+
+# Pass the same provider to kind and the registry commands in included tasks.
+env:
+  KIND_EXPERIMENTAL_PROVIDER: '{{.RUNTIME}}'
+
 includes:
   registry:
     taskfile: tilt/Taskfile.registry.yml
