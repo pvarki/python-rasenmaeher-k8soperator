@@ -200,17 +200,82 @@ context ``kind-rmk8soperator``), then run the operator under Tilt::
     mise install
     task up
 
-On macOS, the default is Podman. Start your Podman machine first::
+On macOS, both Podman and Docker Desktop can provide the engine. Podman is the
+default. Start your Podman machine first (run ``podman machine init`` once if
+you do not have a machine)::
 
     podman machine start  # if the machine is stopped
+    podman info
     task up
 
-Override either default with ``KIND_EXPERIMENTAL_PROVIDER=docker`` or
-``KIND_EXPERIMENTAL_PROVIDER=podman``. Keep the same setting for every lifecycle
-command, including ``task down`` and ``task clean``::
+For Docker Desktop on macOS, start the application and select its Docker CLI
+context. If you previously configured ``DOCKER_HOST`` for Podman, clear it
+before checking that ``docker info`` reports the Docker Desktop engine::
 
     export KIND_EXPERIMENTAL_PROVIDER=docker
+    docker info
     task up
+
+Docker Desktop's built-in Kubernetes cluster is not needed: these tasks create
+a separate kind cluster. The registry uses a published localhost port, and
+kind nodes reach it over their container network; neither path requires direct
+access to the VM's container IP addresses.
+
+On Windows, run the development tools in a WSL2 Linux distribution, with the
+checkout in its Linux filesystem (for example, ``~/devel/``). Install ``mise``
+and run ``mise install`` there; ``bash``, ``git``, and ``python3`` must also be on
+PATH (the Helm Tilt extension uses ``python3``). Run ``task``, ``tilt``,
+``kubectl``, and ``uv`` inside that same distribution.
+
+* **Docker Desktop:** use Linux containers and enable the WSL2 engine and
+  integration for your development distribution in Docker Desktop settings.
+  Follow `Docker's WSL2 setup
+  <https://docs.docker.com/desktop/features/wsl/>`_. In the WSL terminal::
+
+      export KIND_EXPERIMENTAL_PROVIDER=docker
+      docker info
+      task up
+
+* **Podman:** start a Podman machine with root privileges enabled, as required
+  by `kind on Windows
+  <https://podman-desktop.io/docs/kind/configuring-podman-for-kind-on-windows>`_.
+  Follow `Podman's WSL connection setup
+  <https://podman-desktop.io/docs/podman/accessing-podman-from-another-wsl-instance>`_
+  to give your development distribution access to the machine's rootful
+  socket. Install a Linux Podman client executable named ``podman`` on PATH;
+  an interactive shell alias is not enough for kind and Tilt subprocesses.
+  For the default machine, run in the WSL terminal::
+
+      export CONTAINER_HOST=unix:///mnt/wsl/podman-sockets/podman-machine-default/podman-root.sock
+      export KIND_EXPERIMENTAL_PROVIDER=podman
+      podman info
+      task up
+
+  ``CONTAINER_HOST`` selects remote mode even with a full Linux Podman client.
+  Adjust the socket path for a custom machine, and retain this setting for
+  subsequent lifecycle commands. ``podman info`` must succeed with socket
+  access as your WSL user before starting the tasks.
+
+WSL2 uses the Linux provider default (Docker). The Windows path above uses
+Linux clients throughout; native PowerShell, cmd.exe, and Git Bash execution
+are not currently supported by this development setup. The scripts need a
+Unix shell, and Tilt's Podman extension emits POSIX shell commands. Native
+support would also need to handle Git Bash container-path conversion and
+Windows Python launcher setup for the Helm extension.
+
+Validation so far covers the running macOS Podman stack and Linux Docker
+build/push/pull and lifecycle checks. The Ubuntu CI job exercises kind and
+Tilt with Docker. Docker Desktop on macOS and both WSL2 configurations still
+need an end-to-end run on those hosts.
+
+Override a platform default with ``KIND_EXPERIMENTAL_PROVIDER=docker`` or
+``KIND_EXPERIMENTAL_PROVIDER=podman``. Keep the same setting for every lifecycle
+command, including ``task down`` and ``task clean``. Before changing engines,
+exit Tilt and run ``task clean`` with the old provider still selected. This
+deletes the old development cluster and registry, releases port 5005, and
+removes the exported CA. Then select the new provider and run ``task up``.
+Both providers use the same kube context and CA path, so this checkout runs
+one development cluster at a time.
 
 The tasks and Tilt use the same provider selection. Cluster creation uses kind
 directly and does not require ctlptl. Repeated ``task cluster:up`` reuses the
