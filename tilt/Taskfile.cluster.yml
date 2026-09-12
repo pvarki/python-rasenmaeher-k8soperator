@@ -4,9 +4,10 @@ tasks:
   up:
     desc: Start the kind development cluster
     summary: |
-      Uses Docker Engine on Linux and Podman on macOS by default.
+      Uses Docker Engine on Linux. On macOS, detects Docker Desktop's backend
+      socket and otherwise defaults to Podman.
       Set KIND_EXPERIMENTAL_PROVIDER=docker or podman to override the provider
-      for cluster, registry, and Tilt commands. Docker Desktop works on macOS.
+      for cluster, registry, and Tilt commands.
       On Windows, run from WSL2 with Docker Desktop integration or a remote
       client connected to a rootful Podman machine; see README.rst for setup.
     aliases: [u]

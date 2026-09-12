@@ -1,7 +1,16 @@
 version: "3"
 
 vars:
-  RUNTIME: '{{env "KIND_EXPERIMENTAL_PROVIDER" | default (ternary "podman" "docker" (eq OS "darwin"))}}'
+  DOCKER_DESKTOP_SOCKET: '{{.HOME}}/Library/Containers/com.docker.docker/Data/backend.sock'
+  RUNTIME:
+    sh: |
+      {{if env "KIND_EXPERIMENTAL_PROVIDER"}}
+      echo {{env "KIND_EXPERIMENTAL_PROVIDER" | shellQuote}}
+      {{else if eq OS "darwin"}}
+      test -S {{.DOCKER_DESKTOP_SOCKET | shellQuote}} && echo docker || echo podman
+      {{else}}
+      echo docker
+      {{end}}
   TILT_PORT: '{{env "TILT_PORT" | default "10350"}}'
 
 # Pass the same provider to kind and the registry commands in included tasks.

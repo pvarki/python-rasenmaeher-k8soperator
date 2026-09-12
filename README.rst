@@ -200,9 +200,11 @@ context ``kind-rmk8soperator``), then run the operator under Tilt::
     mise install
     task up
 
-On macOS, both Podman and Docker Desktop can provide the engine. Podman is the
-default. Start your Podman machine first (run ``podman machine init`` once if
-you do not have a machine)::
+On macOS, Task selects Docker when Docker Desktop's socket exists at
+``$HOME/Library/Containers/com.docker.docker/Data/backend.sock`` and otherwise
+defaults to Podman. ``KIND_EXPERIMENTAL_PROVIDER`` overrides this detection.
+For Podman, start your machine first (run ``podman machine init`` once if you
+do not have a machine)::
 
     podman machine start  # if the machine is stopped
     podman info
@@ -212,7 +214,6 @@ For Docker Desktop on macOS, start the application and select its Docker CLI
 context. If you previously configured ``DOCKER_HOST`` for Podman, clear it
 before checking that ``docker info`` reports the Docker Desktop engine::
 
-    export KIND_EXPERIMENTAL_PROVIDER=docker
     docker info
     task up
 
@@ -272,16 +273,18 @@ Override a platform default with ``KIND_EXPERIMENTAL_PROVIDER=docker`` or
 ``KIND_EXPERIMENTAL_PROVIDER=podman``; unset it to restore the default.
 Keep the same setting for every lifecycle command, including ``task down``
 and ``task clean``. Before changing engines, run ``task clean`` with the old
-provider still selected. This
+provider still selected. Pin ``KIND_EXPERIMENTAL_PROVIDER`` to the old engine
+if starting or stopping Docker Desktop changes the detected default. Cleanup
 deletes the old development cluster and registry, releases port 5005, and
 removes the exported CA. Then select the new provider and run ``task up``.
 Both providers use the same kube context and CA path, so this checkout runs
 one development cluster at a time.
 
-``Taskfile.yml`` selects the provider with Task's native ``OS`` function and
-exports it to kind. ``task runtime`` prints the selected provider; Tilt uses
-the same task. Repeated ``task cluster:up`` reuses the cluster and repairs its
-registry connection.
+``Taskfile.yml`` uses Task's native ``OS`` function and a dynamic variable for
+the macOS socket check, then exports ``KIND_EXPERIMENTAL_PROVIDER`` to kind.
+``task runtime`` prints the selected provider; Tilt uses the same task.
+Repeated ``task cluster:up`` reuses the cluster and repairs its registry
+connection.
 ``tilt/Taskfile.cluster.yml`` calls kind's create, export, and delete commands
 directly, using its default single-node cluster and ``--wait`` for startup
 readiness. Task's ``status`` checks skip creation when the cluster or registry
