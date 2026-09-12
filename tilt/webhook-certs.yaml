@@ -15,7 +15,7 @@ metadata:
 spec:
   isCA: true
   commonName: opendefense-platform-ca
-  secretName: operator-ca
+  secretName: operator-ca  # pragma: allowlist secret
   duration: 87600h
   privateKey:
     algorithm: ECDSA
@@ -34,7 +34,7 @@ metadata:
   namespace: opendefence-system
 spec:
   ca:
-    secretName: operator-ca
+    secretName: operator-ca  # pragma: allowlist secret
 ---
 apiVersion: cert-manager.io/v1
 kind: Certificate
@@ -42,7 +42,7 @@ metadata:
   name: operator-tls
   namespace: opendefence-system
 spec:
-  secretName: operator-tls
+  secretName: operator-tls  # pragma: allowlist secret
   duration: 8760h
   renewBefore: 360h
   commonName: opendefense-platform.opendefence-system.svc

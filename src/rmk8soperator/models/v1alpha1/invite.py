@@ -35,10 +35,7 @@ class InviteSpec(BaseModel):
     valid_until: Annotated[datetime | None, PrinterColumn(name="Valid until")] = Field(
         default=None,
         alias="validUntil",
-        description=(
-            "RFC 3339 timestamp after which the invite can no longer be redeemed; "
-            "omit for no expiration."
-        ),
+        description=("RFC 3339 timestamp after which the invite can no longer be redeemed; omit for no expiration."),
     )
 
 

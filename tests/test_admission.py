@@ -68,8 +68,10 @@ class FakeAdmissionRequest:
         self.resource = resource
         self.old_resource = old_resource
         self.operation = operation
-        self.name = name or (old_resource.name if old_resource is not None else "") or (
-            resource.name if resource is not None else ""
+        self.name = (
+            name
+            or (old_resource.name if old_resource is not None else "")
+            or (resource.name if resource is not None else "")
         )
         self._client = FakeGroupClient(groups or {})
         self.client_calls = 0
