@@ -3,7 +3,7 @@
 # Tox testsuite for multiple python version #
 #############################################
 FROM advian/tox-base:alpine-3.24 as tox
-ARG PYTHON_VERSIONS="3.14 3.13 3.12"
+ARG PYTHON_VERSIONS="3.14"
 ENV PYENV_ROOT=/root/.pyenv
 ENV PATH="/opt/tox/bin:/root/.pyenv/shims:/root/.pyenv/bin:$PATH"
 COPY --from=ghcr.io/astral-sh/uv:0.12.12 /uv /uvx /usr/local/bin/

@@ -1,0 +1,3 @@
+[tools]
+kind = "latest"
+uv = "latest"

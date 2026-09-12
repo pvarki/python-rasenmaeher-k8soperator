@@ -4,6 +4,47 @@ rasenmaeher-k8soperator
 
 K8s Operator and CRDs with core RASENMAEHER entities
 
+The operator requires Python 3.14+ (cloudcoil). It owns cluster-scoped
+``platform.opendefense.fi/v1alpha1`` resources: User, Group, Role, and Invite.
+Integrations watch those objects; this process resolves name references into
+status (name + Kubernetes UID) and reports Ready conditions. A validating
+admission webhook rejects Group ``parentRef`` values that self-parent, form a
+cycle, or name a missing ancestor, and rejects deleting a group that is still
+named as ``parentRef`` by another group.
+
+CLI
+---
+
+The installed ``rmk8soperator`` command (and ``python -m rmk8soperator``) forwards
+to cloudcoil's ``manifests``, ``install``, and ``run`` entry point::
+
+    # Offline: CRDs and RBAC, no kubeconfig or TLS material required
+    rmk8soperator manifests --without-webhooks
+
+    # Full install: CRDs, RBAC, Service, Deployment, and Group admission
+    # Create namespace and TLS Secret operator-tls first. The serving
+    # certificate must cover opendefense-platform.<namespace>.svc.
+    CLOUDCOIL_NAMESPACE=opendefence-system \
+      rmk8soperator install --image ghcr.io/example/rmk8soperator:latest --ca-file /path/to/ca.crt
+
+    # Offline manifests including webhook registration (same TLS CA)
+    rmk8soperator manifests --image ghcr.io/example/rmk8soperator:latest --ca-file /path/to/ca.crt
+
+    # Run the controllers (kubeconfig locally, ServiceAccount in-cluster)
+    CLOUDCOIL_NAMESPACE=opendefence-system rmk8soperator run
+
+``CLOUDCOIL_NAMESPACE`` is the operator's Lease/Deployment namespace. The CRDs
+themselves are cluster-scoped. Production containers with no arguments run
+``rmk8soperator run``. Admission serves on every replica, independently of
+leader election. Generated webhook configurations fail closed, so the HTTPS
+listener and ``operator-tls`` Secret must be ready before Group writes.
+
+Sample objects (roles, an ops group, user ``alice``, and an invite) live in
+``examples/demo.yaml``::
+
+    kubectl apply -f examples/demo.yaml
+    kubectl get odrole,odgroup,oduser,odinvite
+
 
 Docker and Podman
 -----------------
