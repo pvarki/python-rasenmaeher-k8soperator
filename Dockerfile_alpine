@@ -169,3 +169,19 @@ RUN uv sync --locked \
     && uv tool install git-up \
     && true
 ENTRYPOINT ["/bin/zsh", "-l"]
+
+
+##########################################################
+# Tilt live_update: editable install, process restart     #
+##########################################################
+FROM builder_base as tilt
+COPY ./docker/entrypoint.sh /docker-entrypoint.sh
+COPY ./uv.lock ./pyproject.toml ./README.rst /app/
+COPY ./src /app/src/
+WORKDIR /app
+# No tini: Tilt's restart_process wrapper must be PID 1.
+RUN --mount=type=ssh . /.venv/bin/activate \
+    && uv sync --locked --no-dev \
+    && chmod a+x /docker-entrypoint.sh \
+    && true
+ENTRYPOINT ["/docker-entrypoint.sh"]

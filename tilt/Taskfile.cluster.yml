@@ -1,0 +1,14 @@
+version: "3"
+
+tasks:
+  up:
+    desc: Start the kind development cluster
+    aliases: [u]
+    cmds:
+      - task: :registry:up
+      - ctlptl apply -f cluster.yaml
+
+  down:
+    desc: Delete the kind development cluster
+    aliases: [d]
+    cmd: ctlptl delete -f cluster.yaml

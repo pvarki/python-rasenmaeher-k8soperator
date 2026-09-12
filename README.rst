@@ -188,6 +188,33 @@ TLDR:
     uv run --locked prek run --all-files
     uv run --locked pytest -v
 
+Local cluster with Tilt
+^^^^^^^^^^^^^^^^^^^^^^^
+
+``mise.toml`` installs ``ctlptl``, ``helm``, ``kind``, ``kubectl``, ``task``,
+``tilt``, and ``uv``. Create a kind cluster with a local registry (kube context
+``kind-rmk8soperator``), then run the operator under Tilt::
+
+    mise install
+    task up
+
+``task`` with no arguments lists tasks. ``task up`` starts the registry, the
+kind cluster, and Tilt. ``task down`` stops Tilt and deletes the cluster but
+leaves the registry running. ``task clean`` also removes the registry.
+
+Cluster and registry have short aliases: ``task c:up`` / ``task c:d`` and
+``task r:up`` / ``task r:d`` (also ``c:u``, ``r:u``).
+
+Tilt installs cert-manager, issues a local CA and serving certificate into
+Secret ``operator-tls``, then applies CRDs, RBAC, the operator Deployment, and
+the Group ``ValidatingWebhookConfiguration`` from
+``rmk8soperator manifests --image rmk8soperator --ca-file``. Changes under
+``src/`` are synced into the running pod and the process is restarted (the
+operator does not auto-reload like Flask). Apply sample objects from the Tilt
+UI by triggering the ``demo`` resource (manual), or with
+``kubectl apply -f examples/demo.yaml``. The health listener is forwarded to
+``http://127.0.0.1:8080/readyz``.
+
 Ruff handles linting and formatting; Pyrefly checks types. Run them individually with::
 
     uv run --locked ruff check src tests

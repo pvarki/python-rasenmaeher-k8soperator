@@ -32,27 +32,49 @@ spec:
 apiVersion: platform.opendefense.fi/v1alpha1
 kind: Group
 metadata:
-  name: ops
+  name: group-admin
 spec:
-  name: ops
-  displayName: Operations
+  name: group-admin
+  displayName: Group admin
   managerRefs:
-    - name: alice
+    - name: bob
   roleRefs:
-    - name: group-admin
+    - name: role-admin
 ---
 apiVersion: platform.opendefense.fi/v1alpha1
 kind: User
 metadata:
-  name: alice
+  name: bob
 spec:
-  callsign: alice
-  publicKey: ssh-ed25519 AAAA DEMO
+  callsign: bob
+  publicKey: |
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArandomexamplemTLSkeyDA
+    MOREEXAMPLEDATAabcd1234QwErtyuiop==
+    -----END PUBLIC KEY-----
   roleRefs:
     - name: superadmin
   groupRefs:
-    - name: ops
-  approvalCode: demo-approved
+    - name: group-admin
+  approvalCode: let-him-in
+  approvedAt: "2026-09-12T12:00:00Z"
+---
+apiVersion: platform.opendefense.fi/v1alpha1
+kind: User
+metadata:
+  name: charlie
+spec:
+  callsign: charlie
+  publicKey: |
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArandomexamplemTLSkeyDA
+    MOREEXAMPLEDATAabcd1234QwErtyuiop==
+    -----END PUBLIC KEY-----
+  roleRefs:
+    - name: group-admin
+  groupRefs:
+    - name: group-admin
+  approvalCode: let-him-in
   approvedAt: "2026-09-12T12:00:00Z"
 ---
 apiVersion: platform.opendefense.fi/v1alpha1
@@ -60,10 +82,10 @@ kind: Invite
 metadata:
   name: onboarding
 spec:
-  code: welcome-ops
+  code: let-me-in
   groupRefs:
-    - name: ops
+    - name: group-admin
   roleRefs:
     - name: group-admin
   useCount: 5
-  validUntil: "2027-01-01T00:00:00Z"
+  validUntil: "2137-01-01T00:00:00Z"

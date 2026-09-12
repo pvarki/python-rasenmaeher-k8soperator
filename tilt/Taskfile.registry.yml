@@ -1,0 +1,12 @@
+version: "3"
+
+tasks:
+  up:
+    desc: Start the local container registry
+    aliases: [u]
+    cmd: ctlptl apply -f registry.yaml
+
+  down:
+    desc: Stop and remove the local container registry
+    aliases: [d]
+    cmd: ctlptl delete -f registry.yaml

@@ -1,0 +1,66 @@
+version: "3"
+
+includes:
+  registry:
+    taskfile: tilt/Taskfile.registry.yml
+    dir: tilt
+    aliases: [r]
+  cluster:
+    taskfile: tilt/Taskfile.cluster.yml
+    dir: tilt
+    aliases: [c]
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  up:
+    desc: Start the local registry, kind cluster, and Tilt
+    aliases: [u]
+    summary: |
+      Starts the ctlptl registry, the kind cluster (kind-rmk8soperator),
+      then Tilt in the foreground. Use task down to stop Tilt and the
+      cluster while leaving the registry running.
+    cmds:
+      - task: registry:up
+      - task: cluster:up
+      - task: tilt:up
+
+  down:
+    desc: Delete the kind cluster
+    aliases: [d]
+    summary: |
+      Deletes the kind cluster. The local registry is
+      left running so the next task up can reuse it.
+    cmds:
+      - task: cluster:down
+        ignore_error: true
+
+  clean:
+    desc: Reset the kind cluster and local registry
+    summary: |
+      Stops Tilt, deletes the kind cluster, and removes the local
+      registry. Safe to run when some of those resources are already gone.
+    cmds:
+      - task: down
+        ignore_error: true
+      - task: registry:down
+        ignore_error: true
+
+  tilt:up:
+    desc: Start the Tilt development environment
+    interactive: true
+    aliases: 
+      - t:u
+    cmds:
+      - tilt up
+
+  tilt:down:
+    desc: Stop Tilt resources
+    aliases: 
+      - t:d
+    cmd: tilt down
+    ignore_error: true # sometimes cleanup might not be clean

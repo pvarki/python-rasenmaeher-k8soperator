@@ -1,0 +1,9 @@
+# ctlptl kind cluster for local Tilt development.
+# Create: task cluster:up (or task c:up)
+# Delete: task cluster:down (or task c:d)
+# `name` is the kube-context (kind cluster name: rmk8soperator).
+apiVersion: ctlptl.dev/v1alpha1
+kind: Cluster
+product: kind
+name: kind-rmk8soperator
+registry: ctlptl-registry
