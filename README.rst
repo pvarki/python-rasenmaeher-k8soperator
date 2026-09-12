@@ -39,7 +39,7 @@ themselves are cluster-scoped. Production containers with no arguments run
 leader election. Generated webhook configurations fail closed, so the HTTPS
 listener and ``operator-tls`` Secret must be ready before Group writes.
 
-Sample objects (roles, an ops group, user ``alice``, and an invite) live in
+Sample objects (roles, a group, users ``bob`` and ``charlie``, and an invite) live in
 ``examples/demo.yaml``::
 
     kubectl apply -f examples/demo.yaml
@@ -215,8 +215,10 @@ API or a Docker-compatible Podman socket. With ``docker``, Tilt uses Docker's
 builder for the same development image.
 
 ``task`` with no arguments lists tasks. ``task up`` starts the registry, the
-kind cluster, and Tilt. ``task down`` stops Tilt and deletes the cluster but
-leaves the registry running. ``task clean`` also removes the registry.
+kind cluster, and Tilt. Exit Tilt with Ctrl+C before cleanup. ``task down``
+deletes the cluster and its exported CA but leaves the registry running.
+``task clean`` also removes the registry. ``task tilt:down`` deletes only the
+Tilt-managed resources while keeping the cluster.
 
 Cluster and registry have short aliases: ``task c:up`` / ``task c:d`` and
 ``task r:up`` / ``task r:d`` (also ``c:u``, ``r:u``).
@@ -229,7 +231,8 @@ the Group ``ValidatingWebhookConfiguration`` from
 operator does not auto-reload like Flask). Apply sample objects from the Tilt
 UI by triggering the ``demo`` resource (manual), or with
 ``kubectl apply -f examples/demo.yaml``. The health listener is forwarded to
-``http://127.0.0.1:8080/readyz``.
+``http://127.0.0.1:18080/readyz``. Override the host port with
+``OPERATOR_HEALTH_PORT=18081 task up`` if needed.
 
 Ruff handles linting and formatting; Pyrefly checks types. Run them individually with::
 

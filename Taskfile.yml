@@ -22,8 +22,8 @@ tasks:
     aliases: [u]
     summary: |
       Starts the local registry, the kind cluster (kind-rmk8soperator),
-      then Tilt in the foreground. Use task down to stop Tilt and the
-      cluster while leaving the registry running.
+      then Tilt in the foreground. Exit Tilt with Ctrl+C, then use task
+      down to delete the cluster while leaving the registry running.
     cmds:
       - task: cluster:up
       - task: tilt:up
@@ -36,18 +36,15 @@ tasks:
       left running so the next task up can reuse it.
     cmds:
       - task: cluster:down
-        ignore_error: true
 
   clean:
     desc: Reset the kind cluster and local registry
     summary: |
-      Stops Tilt, deletes the kind cluster, and removes the local
-      registry. Safe to run when some of those resources are already gone.
+      Deletes the kind cluster and removes the local registry. Exit Tilt
+      with Ctrl+C first. Resources that are already gone are skipped.
     cmds:
       - task: down
-        ignore_error: true
       - task: registry:down
-        ignore_error: true
 
   tilt:up:
     desc: Start the Tilt development environment
@@ -58,8 +55,7 @@ tasks:
       - tilt up --context kind-rmk8soperator
 
   tilt:down:
-    desc: Stop Tilt resources
+    desc: Delete Tilt-managed resources from the development cluster
     aliases:
       - t:d
     cmd: tilt down --context kind-rmk8soperator
-    ignore_error: true # sometimes cleanup might not be clean

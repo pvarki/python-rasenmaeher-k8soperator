@@ -32,6 +32,9 @@ EOF
     kubectl --context "kind-${CLUSTER_NAME}" apply -f "${SCRIPT_DIR}/registry.yaml"
     kubectl --context "kind-${CLUSTER_NAME}" wait --for=condition=Ready nodes --all --timeout=120s
     ;;
-  down) kind delete cluster --name "${CLUSTER_NAME}" ;;
+  down)
+    kind delete cluster --name "${CLUSTER_NAME}"
+    rm -f "${SCRIPT_DIR}/.certs/ca.crt"
+    ;;
   *) echo "Usage: $0 up|down" >&2; exit 1 ;;
 esac

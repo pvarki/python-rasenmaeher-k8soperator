@@ -24,6 +24,8 @@ if RUNTIME not in ["docker", "podman"]:
     fail("KIND_EXPERIMENTAL_PROVIDER must be docker or podman")
 if RUNTIME == "podman":
     docker_prune_settings(disable=True)
+# Host bytecode must neither trigger restarts nor be synced into the container.
+watch_settings(ignore=["**/__pycache__/**", "**/*.py[cod]"])
 
 allow_k8s_contexts(KIND_CONTEXT)
 if k8s_context() != KIND_CONTEXT:
@@ -145,7 +147,7 @@ k8s_resource(
         "opendefense-platform.%s.cloudcoil.io:ValidatingWebhookConfiguration:default"
         % OPERATOR_NS,
     ],
-    port_forwards="8080:8080",
+    port_forwards="%s:8080" % os.getenv("OPERATOR_HEALTH_PORT", "18080"),
     resource_deps=["operator-crds-rbac", "export-webhook-ca"],
 )
 
