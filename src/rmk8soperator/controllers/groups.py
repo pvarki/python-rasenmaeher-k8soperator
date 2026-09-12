@@ -88,16 +88,24 @@ async def reconcile_group(group: Group, ctx: Context[Group]) -> None:
 @groups.watch(Group)
 def parent_group_changed(group: Group) -> list[ResourceKey]:
     """Requeue groups that name this group as parent."""
+    # Initial lists already enqueue every primary; pooled watches can fire
+    # before the primary cache is synced, so defer reverse lookups until ready.
+    if not groups.ready:
+        return []
     return referrers_of(groups.cached(Group).list(), lambda obj: obj.spec.parent_ref, group)
 
 
 @groups.watch(User)
 def manager_changed(user: User) -> list[ResourceKey]:
     """Requeue groups that name this user as a manager."""
+    if not groups.ready:
+        return []
     return referrers_of(groups.cached(Group).list(), lambda obj: obj.spec.manager_refs, user)
 
 
 @groups.watch(Role)
 def role_changed(role: Role) -> list[ResourceKey]:
     """Requeue groups that name this role."""
+    if not groups.ready:
+        return []
     return referrers_of(groups.cached(Group).list(), lambda obj: obj.spec.role_refs, role)

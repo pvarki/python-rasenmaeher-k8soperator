@@ -1,16 +1,25 @@
 """Reference helpers and reconcile handlers."""
 
-from typing import cast
+from collections.abc import Callable
+from typing import Any, cast
+from unittest.mock import Mock, PropertyMock
 
 import pytest
 from cloudcoil.apimachinery import ObjectMeta
-from cloudcoil.controller import Context, ResourceKey, TerminalError, Wait
+from cloudcoil.controller import Context, Controller, ResourceKey, TerminalError, Wait
+from cloudcoil.resources import Resource
 
+from rmk8soperator.controllers import groups, invites, users
 from rmk8soperator.controllers._refs import referrers_of, resolve_refs
-from rmk8soperator.controllers.groups import reconcile_group
+from rmk8soperator.controllers.groups import manager_changed, parent_group_changed, reconcile_group
+from rmk8soperator.controllers.groups import role_changed as group_role_changed
+from rmk8soperator.controllers.invites import group_changed as invite_group_changed
 from rmk8soperator.controllers.invites import reconcile_invite
+from rmk8soperator.controllers.invites import role_changed as invite_role_changed
 from rmk8soperator.controllers.roles import reconcile_role
+from rmk8soperator.controllers.users import group_changed as user_group_changed
 from rmk8soperator.controllers.users import reconcile_user
+from rmk8soperator.controllers.users import role_changed as user_role_changed
 from rmk8soperator.models.v1alpha1 import (
     API_VERSION,
     Group,
@@ -194,6 +203,45 @@ def test_referrers_of_matches_name_refs() -> None:
     target = _role("superadmin")
     keys = referrers_of([alice, bob], lambda user: user.spec.role_refs, target)
     assert keys == [ResourceKey("alice")]
+
+
+@pytest.mark.parametrize(
+    ("controller", "mapper", "primary", "target"),
+    [
+        (groups, parent_group_changed, _group("dependent", parent="target"), _group("target")),
+        (groups, manager_changed, _group("dependent", managers=["target"]), _user("target")),
+        (groups, group_role_changed, _group("dependent", roles=["target"]), _role("target")),
+        (users, user_group_changed, _user("dependent", groups=["target"]), _group("target")),
+        (users, user_role_changed, _user("dependent", roles=["target"]), _role("target")),
+        (invites, invite_group_changed, _invite("dependent", groups=["target"]), _group("target")),
+        (invites, invite_role_changed, _invite("dependent", roles=["target"]), _role("target")),
+    ],
+)
+def test_watch_mappers_wait_for_initial_sync(
+    monkeypatch: pytest.MonkeyPatch,
+    controller: Controller[Any],
+    mapper: Callable[[Any], list[ResourceKey]],
+    primary: Resource,
+    target: Resource,
+) -> None:
+    """Initial list events must not read unsynced snapshots; later events requeue dependents."""
+    ready = PropertyMock(return_value=False)
+    monkeypatch.setattr(Controller, "ready", ready)
+    cache = Mock()
+    cache.list.return_value = [primary]
+    cached = Mock(return_value=cache)
+    monkeypatch.setattr(controller, "cached", cached)
+
+    assert mapper(target) == []
+    cached.assert_not_called()
+
+    ready.return_value = True
+    assert mapper(target) == [ResourceKey("dependent")]
+    cached.assert_called_once_with(type(primary))
+
+    cache.list.side_effect = RuntimeError("Informer watch failed")
+    with pytest.raises(RuntimeError, match="Informer watch failed"):
+        mapper(target)
 
 
 def test_resolve_refs_skips_objects_without_uid() -> None:

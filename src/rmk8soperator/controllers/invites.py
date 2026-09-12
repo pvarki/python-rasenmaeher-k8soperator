@@ -19,10 +19,15 @@ async def reconcile_invite(invite: Invite, ctx: Context[Invite]) -> None:
 @invites.watch(Group)
 def group_changed(group: Group) -> list[ResourceKey]:
     """Requeue invites that name this group."""
+    # Initial lists queue every invite; reverse lookups need synced caches.
+    if not invites.ready:
+        return []
     return referrers_of(invites.cached(Invite).list(), lambda obj: obj.spec.group_refs, group)
 
 
 @invites.watch(Role)
 def role_changed(role: Role) -> list[ResourceKey]:
     """Requeue invites that name this role."""
+    if not invites.ready:
+        return []
     return referrers_of(invites.cached(Invite).list(), lambda obj: obj.spec.role_refs, role)

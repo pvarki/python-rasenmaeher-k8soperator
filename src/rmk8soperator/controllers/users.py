@@ -20,10 +20,15 @@ async def reconcile_user(user: User, ctx: Context[User]) -> None:
 @users.watch(Role)
 def role_changed(role: Role) -> list[ResourceKey]:
     """Requeue users that name this role."""
+    # Initial lists queue every user; reverse lookups need synced caches.
+    if not users.ready:
+        return []
     return referrers_of(users.cached(User).list(), lambda obj: obj.spec.role_refs, role)
 
 
 @users.watch(Group)
 def group_changed(group: Group) -> list[ResourceKey]:
     """Requeue users that name this group."""
+    if not users.ready:
+        return []
     return referrers_of(users.cached(User).list(), lambda obj: obj.spec.group_refs, group)
