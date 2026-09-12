@@ -14,7 +14,7 @@ metadata:
   namespace: opendefence-system
 spec:
   isCA: true
-  commonName: opendefense-platform-ca
+  commonName: opendefence-platform-ca
   secretName: operator-ca  # pragma: allowlist secret
   duration: 87600h
   privateKey:
@@ -45,11 +45,11 @@ spec:
   secretName: operator-tls  # pragma: allowlist secret
   duration: 8760h
   renewBefore: 360h
-  commonName: opendefense-platform.opendefence-system.svc
+  commonName: opendefence-platform.opendefence-system.svc
   dnsNames:
-    - opendefense-platform
-    - opendefense-platform.opendefence-system.svc
-    - opendefense-platform.opendefence-system.svc.cluster.local
+    - opendefence-platform
+    - opendefence-platform.opendefence-system.svc
+    - opendefence-platform.opendefence-system.svc.cluster.local
   usages:
     - digital signature
     - key encipherment

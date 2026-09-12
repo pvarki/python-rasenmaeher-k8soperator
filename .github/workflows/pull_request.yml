@@ -168,7 +168,7 @@ jobs:
           test -s tilt/.certs/ca.crt
           tilt ci --context kind-rmk8soperator --timeout 10m --port-forwards=false
           image="$(kubectl --context kind-rmk8soperator -n opendefence-system \
-            get deployment opendefense-platform -o jsonpath='{.spec.template.spec.containers[0].image}')"
+            get deployment opendefence-platform -o jsonpath='{.spec.template.spec.containers[0].image}')"
           case "$image" in
             localhost:5005/*) ;;
             *) echo "Operator image did not use the local registry: $image" >&2; exit 1 ;;
@@ -179,16 +179,16 @@ jobs:
           kubectl --context kind-rmk8soperator wait --for=condition=ReferencesResolved \
             odrole,odgroup,oduser,odinvite --all --timeout=60s
           kubectl --context kind-rmk8soperator -n opendefence-system \
-            rollout restart deployment/opendefense-platform
+            rollout restart deployment/opendefence-platform
           kubectl --context kind-rmk8soperator -n opendefence-system \
-            rollout status deployment/opendefense-platform --timeout=120s
+            rollout status deployment/opendefence-platform --timeout=120s
       - name: Diagnose failures
         if: failure()
         run: |
           docker ps -a
           kubectl --context kind-rmk8soperator get pods -A
           kubectl --context kind-rmk8soperator -n opendefence-system \
-            logs deployment/opendefense-platform --all-containers --tail=100
+            logs deployment/opendefence-platform --all-containers --tail=100
       - name: Clean up the cluster and registry
         if: always()
         run: task clean

@@ -1,4 +1,4 @@
-"""Shared identity types for platform.opendefense.fi/v1alpha1."""
+"""Shared identity types for platform.opendefence.fi/v1alpha1."""
 
 from typing import Annotated
 
@@ -8,7 +8,7 @@ from cloudcoil.apimachinery import Condition, Time
 from cloudcoil.crd import ListType
 from cloudcoil.pydantic import BaseModel
 
-API_VERSION = "platform.opendefense.fi/v1alpha1"
+API_VERSION = "platform.opendefence.fi/v1alpha1"
 
 
 class PlatformCondition(Condition):

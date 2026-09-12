@@ -33,8 +33,8 @@ def _missing_descriptions(schema: dict[str, Any], path: str) -> list[str]:
 def test_user_crd_is_cluster_scoped_with_status_and_aliases() -> None:
     """User CRD is cluster-scoped, has a status subresource, and uses wire aliases."""
     manifest = CRD(User).manifest()
-    assert manifest["metadata"]["name"] == "users.platform.opendefense.fi"
-    assert manifest["spec"]["group"] == "platform.opendefense.fi"
+    assert manifest["metadata"]["name"] == "users.platform.opendefence.fi"
+    assert manifest["spec"]["group"] == "platform.opendefence.fi"
     assert manifest["spec"]["scope"] == "Cluster"
     assert manifest["spec"]["names"]["shortNames"] == ["oduser"]
     assert _version(manifest)["name"] == "v1alpha1"

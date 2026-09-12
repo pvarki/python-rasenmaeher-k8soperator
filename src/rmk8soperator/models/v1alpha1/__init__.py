@@ -1,4 +1,4 @@
-"""platform.opendefense.fi/v1alpha1 resources."""
+"""platform.opendefence.fi/v1alpha1 resources."""
 
 from rmk8soperator.models.v1alpha1.common import API_VERSION, ObjectRef, PlatformStatus, ResolvedRef
 from rmk8soperator.models.v1alpha1.group import Group, GroupSpec, GroupStatus

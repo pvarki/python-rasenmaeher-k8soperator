@@ -94,15 +94,15 @@ k8s_yaml(
 k8s_resource(
     new_name="operator-crds-rbac",
     objects=[
-        "groups.platform.opendefense.fi:CustomResourceDefinition:default",
-        "invites.platform.opendefense.fi:CustomResourceDefinition:default",
-        "roles.platform.opendefense.fi:CustomResourceDefinition:default",
-        "users.platform.opendefense.fi:CustomResourceDefinition:default",
-        "opendefense-platform:serviceaccount:%s" % OPERATOR_NS,
-        "opendefense-platform.%s:clusterrole:default" % OPERATOR_NS,
-        "opendefense-platform.%s:clusterrolebinding:default" % OPERATOR_NS,
-        "opendefense-platform.%s:role:%s" % (OPERATOR_NS, OPERATOR_NS),
-        "opendefense-platform.%s:rolebinding:%s" % (OPERATOR_NS, OPERATOR_NS),
+        "groups.platform.opendefence.fi:CustomResourceDefinition:default",
+        "invites.platform.opendefence.fi:CustomResourceDefinition:default",
+        "roles.platform.opendefence.fi:CustomResourceDefinition:default",
+        "users.platform.opendefence.fi:CustomResourceDefinition:default",
+        "opendefence-platform:serviceaccount:%s" % OPERATOR_NS,
+        "opendefence-platform.%s:clusterrole:default" % OPERATOR_NS,
+        "opendefence-platform.%s:clusterrolebinding:default" % OPERATOR_NS,
+        "opendefence-platform.%s:role:%s" % (OPERATOR_NS, OPERATOR_NS),
+        "opendefence-platform.%s:rolebinding:%s" % (OPERATOR_NS, OPERATOR_NS),
     ],
     resource_deps=["operator-ns"],
 )
@@ -140,9 +140,9 @@ else:
     )
 
 k8s_resource(
-    "opendefense-platform",
+    "opendefence-platform",
     objects=[
-        "opendefense-platform.%s.cloudcoil.io:ValidatingWebhookConfiguration:default"
+        "opendefence-platform.%s.cloudcoil.io:ValidatingWebhookConfiguration:default"
         % OPERATOR_NS,
     ],
     port_forwards="%s:8080" % os.getenv("OPERATOR_HEALTH_PORT", "18080"),
@@ -161,7 +161,7 @@ k8s_resource(
         "charlie:User:default",
         "onboarding:Invite:default",
     ],
-    resource_deps=["opendefense-platform"],
+    resource_deps=["opendefence-platform"],
     trigger_mode=TRIGGER_MODE_MANUAL,
     auto_init=False,
 )

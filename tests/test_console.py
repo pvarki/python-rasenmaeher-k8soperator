@@ -40,8 +40,8 @@ async def test_cli_manifests() -> None:
     assert process.returncode == 0, ensure_str(out[1])
     stdout = ensure_str(out[0])
     assert "kind: CustomResourceDefinition" in stdout
-    assert "users.platform.opendefense.fi" in stdout
-    assert "invites.platform.opendefense.fi" in stdout
+    assert "users.platform.opendefence.fi" in stdout
+    assert "invites.platform.opendefence.fi" in stdout
 
 
 def test_verbose_logging_flags() -> None:

@@ -5,7 +5,7 @@ rasenmaeher-k8soperator
 K8s Operator and CRDs with core RASENMAEHER entities
 
 The operator requires Python 3.14+ (cloudcoil). It owns cluster-scoped
-``platform.opendefense.fi/v1alpha1`` resources: User, Group, Role, and Invite.
+``platform.opendefence.fi/v1alpha1`` resources: User, Group, Role, and Invite.
 Integrations watch those objects; this process resolves name references into
 status (name + Kubernetes UID) and reports Ready conditions. A validating
 admission webhook rejects Group ``parentRef`` values that self-parent, form a
@@ -23,7 +23,7 @@ to cloudcoil's ``manifests``, ``install``, and ``run`` entry point::
 
     # Full install: CRDs, RBAC, Service, Deployment, and Group admission
     # Create namespace and TLS Secret operator-tls first. The serving
-    # certificate must cover opendefense-platform.<namespace>.svc.
+    # certificate must cover opendefence-platform.<namespace>.svc.
     CLOUDCOIL_NAMESPACE=opendefence-system \
       rmk8soperator install --image ghcr.io/example/rmk8soperator:latest --ca-file /path/to/ca.crt
 
