@@ -189,8 +189,8 @@ Dockerfiles)::
     docker run --rm -it -v "$(pwd):/app" rmk8soperator:tox
 
     # Production image; tag with the project version
-    docker build --target production -t rmk8soperator:0.1.0-260912 .
-    docker run -it --name rmk8soperator rmk8soperator:0.1.0-260912
+    docker build --target production -t rmk8soperator:0.1.1-260913 .
+    docker run -it --name rmk8soperator rmk8soperator:0.1.1-260913
 
 Replace ``docker`` with ``podman`` if that is your engine.
 
