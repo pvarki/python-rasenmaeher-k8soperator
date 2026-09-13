@@ -42,7 +42,6 @@ def _user(name: str, *, roles: list[str] | None = None, groups: list[str] | None
         metadata=ObjectMeta(name=name, uid=f"uid-{name}"),
         spec=UserSpec(
             callsign=name,
-            public_key="ssh-ed25519 AAAA",
             role_refs=[ObjectRef(name=item) for item in roles or []],
             group_refs=[ObjectRef(name=item) for item in groups or []],
         ),

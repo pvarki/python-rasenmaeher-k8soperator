@@ -4,6 +4,7 @@ from cloudcoil.admission import AdmissionDenied, AdmissionRequest
 from cloudcoil.controller import Context, Controller, ResourceKey
 from cloudcoil.errors import ResourceNotFound
 
+from rmk8soperator.controllers._events import recorder
 from rmk8soperator.controllers._refs import (
     inspect_parent_chain,
     mark_resolved,
@@ -14,7 +15,7 @@ from rmk8soperator.controllers._refs import (
 )
 from rmk8soperator.models.v1alpha1 import Group, Role, User
 
-groups = Controller(Group, name="groups")
+groups = Controller(Group, name="groups", events=recorder("groups"))
 
 
 def _parent_of(group: Group) -> str | None:

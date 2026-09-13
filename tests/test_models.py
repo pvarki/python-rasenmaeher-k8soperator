@@ -21,6 +21,10 @@ def _spec_properties(manifest: dict[str, Any]) -> dict[str, Any]:
     return _version(manifest)["schema"]["openAPIV3Schema"]["properties"]["spec"]["properties"]
 
 
+def _status_properties(manifest: dict[str, Any]) -> dict[str, Any]:
+    return _version(manifest)["schema"]["openAPIV3Schema"]["properties"]["status"]["properties"]
+
+
 def _missing_descriptions(schema: dict[str, Any], path: str) -> list[str]:
     missing = [] if "description" in schema else [path]
     for name, child in schema.get("properties", {}).items():
@@ -40,7 +44,9 @@ def test_user_crd_is_cluster_scoped_with_status_and_aliases() -> None:
     assert _version(manifest)["name"] == "v1alpha1"
     assert _version(manifest)["subresources"] == {"status": {}}
     spec = _spec_properties(manifest)
-    assert "publicKey" in spec
+    status = _status_properties(manifest)
+    assert "publicKey" not in spec
+    assert "publicKey" in status
     assert "roleRefs" in spec
     assert "callsign" in spec
     assert {"Callsign", "Revoked", "Approved", "Age"} <= _column_names(manifest)

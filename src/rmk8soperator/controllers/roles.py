@@ -2,10 +2,11 @@
 
 from cloudcoil.controller import Context, Controller
 
+from rmk8soperator.controllers._events import recorder
 from rmk8soperator.controllers._refs import mark_resolved
 from rmk8soperator.models.v1alpha1 import Role
 
-roles = Controller(Role, name="roles")
+roles = Controller(Role, name="roles", events=recorder("roles"))
 
 
 @roles.reconcile()

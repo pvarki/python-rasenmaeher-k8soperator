@@ -47,11 +47,6 @@ metadata:
   name: bob
 spec:
   callsign: bob
-  publicKey: |
-    -----BEGIN PUBLIC KEY-----
-    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArandomexamplemTLSkeyDA
-    MOREEXAMPLEDATAabcd1234QwErtyuiop==
-    -----END PUBLIC KEY-----
   roleRefs:
     - name: superadmin
   groupRefs:
@@ -65,11 +60,6 @@ metadata:
   name: charlie
 spec:
   callsign: charlie
-  publicKey: |
-    -----BEGIN PUBLIC KEY-----
-    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArandomexamplemTLSkeyDA
-    MOREEXAMPLEDATAabcd1234QwErtyuiop==
-    -----END PUBLIC KEY-----
   roleRefs:
     - name: group-admin
   groupRefs:

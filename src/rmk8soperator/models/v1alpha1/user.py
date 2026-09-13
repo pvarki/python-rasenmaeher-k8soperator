@@ -19,10 +19,6 @@ class UserSpec(BaseModel):
         min_length=1,
         description="Unique callsign used to identify the user on the platform.",
     )
-    public_key: str = Field(
-        alias="publicKey",
-        description="Public key signature of the user's mTLS certificate.",
-    )
     revoked_at: Annotated[datetime | None, PrinterColumn(name="Revoked")] = Field(
         default=None,
         alias="revokedAt",
@@ -51,8 +47,13 @@ class UserSpec(BaseModel):
 
 
 class UserStatus(PlatformStatus):
-    """Resolved role and group UIDs for a user."""
+    """Observed identity material and resolved role and group UIDs for a user."""
 
+    public_key: str | None = Field(
+        default=None,
+        alias="publicKey",
+        description="Public key signature of the user's mTLS certificate, observed from the cluster.",
+    )
     roles: Annotated[list[ResolvedRef], ListType("map", keys=("name",))] = Field(
         default_factory=list,
         description="Names and UIDs of the roles assigned directly to the user.",
