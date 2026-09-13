@@ -26,9 +26,7 @@ class OperatorEventRecorder(EventRecorder):
             namespace = self.namespace or config.namespace
             if namespace:
                 resource = resource.model_copy(
-                    update={
-                        "metadata": resource.metadata.model_copy(update={"namespace": namespace})
-                    }
+                    update={"metadata": resource.metadata.model_copy(update={"namespace": namespace})}
                 )
         return await super().emit(resource, reason, message, **kwargs)
 
