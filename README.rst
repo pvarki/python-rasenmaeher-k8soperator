@@ -135,7 +135,10 @@ provider.
 Tilt installs cert-manager, issues a local CA and serving certificate into
 Secret ``operator-tls``, then applies CRDs, RBAC, the operator Deployment, and
 the Group ``ValidatingWebhookConfiguration`` from
-``rmk8soperator manifests --image rmk8soperator --ca-file``.
+``rmk8soperator manifests --image rmk8soperator --ca-file``. The
+``webhook-ready`` step then polls the webhook with a server-side dry run;
+the ``demo`` resource waits for it, because Service traffic to the fail-closed
+Group webhook is refused until the endpoint of the ready pod is programmed.
 
 CLI
 ---

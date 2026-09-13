@@ -149,6 +149,14 @@ k8s_resource(
     resource_deps=["operator-crds-rbac", "export-webhook-ca"],
 )
 
+local_resource(
+    "webhook-ready",
+    "./tilt/wait-webhook.sh",
+    deps=["tilt/wait-webhook.sh"],
+    resource_deps=["opendefence-platform"],
+    env={"KIND_CONTEXT": KIND_CONTEXT},
+)
+
 k8s_yaml("examples/demo.yaml")
 k8s_resource(
     new_name="demo",
@@ -161,7 +169,7 @@ k8s_resource(
         "charlie:User:default",
         "onboarding:Invite:default",
     ],
-    resource_deps=["opendefence-platform"],
+    resource_deps=["webhook-ready"],
     trigger_mode=TRIGGER_MODE_MANUAL,
     auto_init=False,
 )
