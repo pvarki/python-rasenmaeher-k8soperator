@@ -11,6 +11,28 @@ from cloudcoil.resources import Resource
 
 from rmk8soperator.models.v1alpha1.common import API_VERSION, ObjectRef, PlatformStatus, ResolvedRef
 
+BINDINGS_SYNCED_CONDITION = "BindingsSynced"
+
+
+class BindingObservation(BaseModel):
+    """A UserBinding observed for this user in an integration namespace."""
+
+    name: str = Field(
+        min_length=1,
+        description="Kubernetes resource name of the UserBinding.",
+    )
+    namespace: str = Field(
+        min_length=1,
+        description="Namespace of the UserBinding, identifying the integration.",
+    )
+    uid: str = Field(
+        min_length=1,
+        description="Kubernetes UID of the UserBinding.",
+    )
+    synced: bool = Field(
+        description="Whether the UserBinding Synced condition is True.",
+    )
+
 
 class UserSpec(BaseModel):
     """Desired identity of a platform user."""
@@ -18,10 +40,6 @@ class UserSpec(BaseModel):
     callsign: Annotated[str, PrinterColumn(name="Callsign")] = Field(
         min_length=1,
         description="Unique callsign used to identify the user on the platform.",
-    )
-    public_key: str = Field(
-        alias="publicKey",
-        description="Public key signature of the user's mTLS certificate.",
     )
     revoked_at: Annotated[datetime | None, PrinterColumn(name="Revoked")] = Field(
         default=None,
@@ -51,8 +69,13 @@ class UserSpec(BaseModel):
 
 
 class UserStatus(PlatformStatus):
-    """Resolved role and group UIDs for a user."""
+    """Observed identity material, resolved refs, and integration UserBindings."""
 
+    public_key: str | None = Field(
+        default=None,
+        alias="publicKey",
+        description="Public key signature of the user's mTLS certificate, observed from the cluster.",
+    )
     roles: Annotated[list[ResolvedRef], ListType("map", keys=("name",))] = Field(
         default_factory=list,
         description="Names and UIDs of the roles assigned directly to the user.",
@@ -60,6 +83,10 @@ class UserStatus(PlatformStatus):
     groups: Annotated[list[ResolvedRef], ListType("map", keys=("name",))] = Field(
         default_factory=list,
         description="Names and UIDs of the groups the user belongs to.",
+    )
+    bindings: Annotated[list[BindingObservation], ListType("map", keys=("namespace", "name"))] = Field(
+        default_factory=list,
+        description="UserBindings created by integrations for this user, with their sync state.",
     )
 
 

@@ -42,6 +42,7 @@ async def test_cli_manifests() -> None:
     assert "kind: CustomResourceDefinition" in stdout
     assert "users.platform.opendefence.fi" in stdout
     assert "invites.platform.opendefence.fi" in stdout
+    assert "userbindings.platform.opendefence.fi" in stdout
 
 
 def test_verbose_logging_flags() -> None:

@@ -4,9 +4,9 @@ rasenmaeher-k8soperator
 
 Kubernetes operator for the OpenDefense platform. It owns `platform.opendefence.fi`-group
 resources, such as User, Group, Role, and Invite, and keeps their status and references
-consistent.
-
-Integrations watch these resources and use them to manage access to the platform.
+consistent. Integrations create namespaced UserBinding objects to record that they have
+taken a User into account; this operator watches those bindings and reports their
+``Synced`` conditions on the User, but does not admit or reconcile UserBinding itself.
 
 Quickstart
 ----------
@@ -29,12 +29,12 @@ is Docker; start it and confirm ``docker info`` succeeds as your user.
 http://127.0.0.1:10350/). Health is forwarded to
 http://127.0.0.1:18080/readyz.
 
-Apply the sample objects (roles, a group, users ``bob`` and ``charlie``, and an
-invite) from the Tilt UI by triggering the ``demo`` resource (manual), or with
-kubectl::
+Apply the sample objects (roles, a group, users ``bob`` and ``charlie``, an
+invite, and a UserBinding) from the Tilt UI by triggering the ``demo`` resource
+(manual), or with kubectl::
 
     kubectl apply -f examples/demo.yaml
-    kubectl get odrole,odgroup,oduser,odinvite
+    kubectl get odrole,odgroup,oduser,odinvite,odub
 
 Everyday commands (``task`` with no arguments lists them):
 
@@ -161,8 +161,9 @@ forwards to cloudcoil's ``manifests``, ``install``, and ``run`` entry points::
     # Run the controllers (kubeconfig locally, ServiceAccount in-cluster)
     CLOUDCOIL_NAMESPACE=opendefence-system rmk8soperator run
 
-``CLOUDCOIL_NAMESPACE`` is the operator's Lease/Deployment namespace. The CRDs
-themselves are cluster-scoped. Production containers with no arguments run
+``CLOUDCOIL_NAMESPACE`` is the operator's Lease/Deployment namespace. User, Group,
+Role, and Invite are cluster-scoped; UserBinding is namespaced. Production
+containers with no arguments run
 ``rmk8soperator run``. Admission serves on every replica, independently of
 leader election. Generated webhook configurations fail closed, so the HTTPS
 listener and ``operator-tls`` Secret must be ready before Group writes.
@@ -192,8 +193,8 @@ Dockerfiles)::
     docker run --rm -it -v "$(pwd):/app" rmk8soperator:tox
 
     # Production image; tag with the project version
-    docker build --target production -t rmk8soperator:0.1.1-260913 .
-    docker run -it --name rmk8soperator rmk8soperator:0.1.1-260913
+    docker build --target production -t rmk8soperator:0.1.2-260913 .
+    docker run -it --name rmk8soperator rmk8soperator:0.1.2-260913
 
 Replace ``docker`` with ``podman`` if that is your engine.
 

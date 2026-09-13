@@ -1,4 +1,5 @@
-# Demo platform.opendefence.fi/v1alpha1 objects (cluster-scoped).
+# Demo platform.opendefence.fi/v1alpha1 objects.
+# User, Group, Role, and Invite are cluster-scoped. UserBinding is namespaced.
 # Install the operator (CRDs, RBAC, and Group admission webhook) first:
 #   CLOUDCOIL_NAMESPACE=opendefence-system \
 #     rmk8soperator install --image <image> --ca-file /path/to/ca.crt
@@ -47,11 +48,6 @@ metadata:
   name: bob
 spec:
   callsign: bob
-  publicKey: |
-    -----BEGIN PUBLIC KEY-----
-    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArandomexamplemTLSkeyDA
-    MOREEXAMPLEDATAabcd1234QwErtyuiop==
-    -----END PUBLIC KEY-----
   roleRefs:
     - name: superadmin
   groupRefs:
@@ -65,11 +61,6 @@ metadata:
   name: charlie
 spec:
   callsign: charlie
-  publicKey: |
-    -----BEGIN PUBLIC KEY-----
-    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArandomexamplemTLSkeyDA
-    MOREEXAMPLEDATAabcd1234QwErtyuiop==
-    -----END PUBLIC KEY-----
   roleRefs:
     - name: group-admin
   groupRefs:
@@ -89,3 +80,14 @@ spec:
     - name: group-admin
   useCount: 5
   validUntil: "2137-01-01T00:00:00Z"
+---
+# Integrations create UserBindings in their own namespaces. Status.conditions
+# with type Synced is written by the integration, not this operator.
+apiVersion: platform.opendefence.fi/v1alpha1
+kind: UserBinding
+metadata:
+  name: bob
+  namespace: default
+spec:
+  userRef:
+    name: bob

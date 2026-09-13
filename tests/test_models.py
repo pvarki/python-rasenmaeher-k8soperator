@@ -6,7 +6,7 @@ from typing import Any
 import yaml
 from cloudcoil.crd import CRD
 
-from rmk8soperator.models.v1alpha1 import API_VERSION, Group, Invite, Role, User
+from rmk8soperator.models.v1alpha1 import API_VERSION, Group, Invite, Role, User, UserBinding
 
 
 def _version(manifest: dict[str, Any]) -> dict[str, Any]:
@@ -19,6 +19,10 @@ def _column_names(manifest: dict[str, Any]) -> set[str]:
 
 def _spec_properties(manifest: dict[str, Any]) -> dict[str, Any]:
     return _version(manifest)["schema"]["openAPIV3Schema"]["properties"]["spec"]["properties"]
+
+
+def _status_properties(manifest: dict[str, Any]) -> dict[str, Any]:
+    return _version(manifest)["schema"]["openAPIV3Schema"]["properties"]["status"]["properties"]
 
 
 def _missing_descriptions(schema: dict[str, Any], path: str) -> list[str]:
@@ -40,10 +44,29 @@ def test_user_crd_is_cluster_scoped_with_status_and_aliases() -> None:
     assert _version(manifest)["name"] == "v1alpha1"
     assert _version(manifest)["subresources"] == {"status": {}}
     spec = _spec_properties(manifest)
-    assert "publicKey" in spec
+    status = _status_properties(manifest)
+    assert "publicKey" not in spec
+    assert "publicKey" in status
     assert "roleRefs" in spec
     assert "callsign" in spec
     assert {"Callsign", "Revoked", "Approved", "Age"} <= _column_names(manifest)
+    assert "bindings" in status
+
+
+def test_userbinding_crd_is_namespaced_with_sync_columns() -> None:
+    """UserBinding is namespaced, has a status subresource, and prints User/Synced."""
+    manifest = CRD(UserBinding).manifest()
+    assert manifest["metadata"]["name"] == "userbindings.platform.opendefence.fi"
+    assert manifest["spec"]["group"] == "platform.opendefence.fi"
+    assert manifest["spec"]["scope"] == "Namespaced"
+    assert manifest["spec"]["names"]["shortNames"] == ["odub"]
+    assert _version(manifest)["subresources"] == {"status": {}}
+    spec = _spec_properties(manifest)
+    status = _status_properties(manifest)
+    assert "userRef" in spec
+    assert "conditions" in status
+    assert "user" not in status
+    assert {"User", "Synced", "Age"} <= _column_names(manifest)
 
 
 def test_group_role_invite_crds() -> None:
@@ -63,7 +86,7 @@ def test_group_role_invite_crds() -> None:
 
 def test_all_custom_resource_fields_have_descriptions() -> None:
     """Spec and status schemas describe every field exposed in the CRDs."""
-    for model in (User, Group, Role, Invite):
+    for model in (User, Group, Role, Invite, UserBinding):
         properties = _version(CRD(model).manifest())["schema"]["openAPIV3Schema"]["properties"]
         assert _missing_descriptions(properties["spec"], "spec") == []
         assert _missing_descriptions(properties["status"], "status") == []
@@ -80,8 +103,14 @@ def test_invite_status_does_not_duplicate_spec_references() -> None:
 def test_demo_manifests_parse_as_typed_resources() -> None:
     """examples/demo.yaml round-trips through the handwritten resource models."""
     demo = Path(__file__).resolve().parents[1] / "examples" / "demo.yaml"
-    kinds = {User: 0, Group: 0, Role: 0, Invite: 0}
-    models = {"User": User, "Group": Group, "Role": Role, "Invite": Invite}
+    kinds = {User: 0, Group: 0, Role: 0, Invite: 0, UserBinding: 0}
+    models = {
+        "User": User,
+        "Group": Group,
+        "Role": Role,
+        "Invite": Invite,
+        "UserBinding": UserBinding,
+    }
     for document in yaml.safe_load_all(demo.read_text()):
         if document is None:
             continue
@@ -94,3 +123,4 @@ def test_demo_manifests_parse_as_typed_resources() -> None:
     assert kinds[Group] == 1
     assert kinds[User] == 2
     assert kinds[Invite] == 1
+    assert kinds[UserBinding] == 1
