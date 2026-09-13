@@ -39,9 +39,7 @@ async def test_cluster_scoped_events_use_operator_namespace() -> None:
     user = _user("bob")
     events = recorder("users")
 
-    assert await events.emit(
-        user, "Reconciled", "ok", config=cast(Config, config)
-    )
+    assert await events.emit(user, "Reconciled", "ok", config=cast(Config, config))
     assert user.namespace is None
 
     posted = config.async_client.post
@@ -62,9 +60,7 @@ async def test_namespaced_events_keep_object_namespace() -> None:
     user = _user("bob", namespace="team-a")
     events = recorder("users")
 
-    assert await events.emit(
-        user, "Reconciled", "ok", config=cast(Config, config)
-    )
+    assert await events.emit(user, "Reconciled", "ok", config=cast(Config, config))
     path = config.async_client.post.call_args.args[0]
     body = config.async_client.post.call_args.kwargs["json"]
     assert path == "/apis/events.k8s.io/v1/namespaces/team-a/events"
