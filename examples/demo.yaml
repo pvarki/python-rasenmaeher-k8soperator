@@ -1,0 +1,91 @@
+# Demo platform.opendefence.fi/v1alpha1 objects (cluster-scoped).
+# Install the operator (CRDs, RBAC, and Group admission webhook) first:
+#   CLOUDCOIL_NAMESPACE=opendefence-system \
+#     rmk8soperator install --image <image> --ca-file /path/to/ca.crt
+# The Secret operator-tls must exist in that namespace. Then:
+#   kubectl apply -f examples/demo.yaml
+---
+apiVersion: platform.opendefence.fi/v1alpha1
+kind: Role
+metadata:
+  name: superadmin
+spec:
+  name: superadmin
+  displayName: Superadmin
+---
+apiVersion: platform.opendefence.fi/v1alpha1
+kind: Role
+metadata:
+  name: group-admin
+spec:
+  name: group-admin
+  displayName: Group admin
+---
+apiVersion: platform.opendefence.fi/v1alpha1
+kind: Role
+metadata:
+  name: role-admin
+spec:
+  name: role-admin
+  displayName: Role admin
+---
+apiVersion: platform.opendefence.fi/v1alpha1
+kind: Group
+metadata:
+  name: group-admin
+spec:
+  name: group-admin
+  displayName: Group admin
+  managerRefs:
+    - name: bob
+  roleRefs:
+    - name: role-admin
+---
+apiVersion: platform.opendefence.fi/v1alpha1
+kind: User
+metadata:
+  name: bob
+spec:
+  callsign: bob
+  publicKey: |
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArandomexamplemTLSkeyDA
+    MOREEXAMPLEDATAabcd1234QwErtyuiop==
+    -----END PUBLIC KEY-----
+  roleRefs:
+    - name: superadmin
+  groupRefs:
+    - name: group-admin
+  approvalCode: let-him-in
+  approvedAt: "2026-09-12T12:00:00Z"
+---
+apiVersion: platform.opendefence.fi/v1alpha1
+kind: User
+metadata:
+  name: charlie
+spec:
+  callsign: charlie
+  publicKey: |
+    -----BEGIN PUBLIC KEY-----
+    MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArandomexamplemTLSkeyDA
+    MOREEXAMPLEDATAabcd1234QwErtyuiop==
+    -----END PUBLIC KEY-----
+  roleRefs:
+    - name: group-admin
+  groupRefs:
+    - name: group-admin
+  approvalCode: let-him-in
+  approvedAt: "2026-09-12T12:00:00Z"
+---
+apiVersion: platform.opendefence.fi/v1alpha1
+kind: Invite
+metadata:
+  name: onboarding
+spec:
+  code: let-me-in
+  groupRefs:
+    - name: group-admin
+  roleRefs:
+    - name: group-admin
+  useCount: 5
+  validUntil: "2137-01-01T00:00:00Z"

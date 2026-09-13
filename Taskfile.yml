@@ -1,0 +1,97 @@
+version: "3"
+
+vars:
+  DOCKER_DESKTOP_SOCKET: '{{.HOME}}/Library/Containers/com.docker.docker/Data/backend.sock'
+  RUNTIME:
+    sh: |
+      {{if env "KIND_EXPERIMENTAL_PROVIDER"}}
+      echo {{env "KIND_EXPERIMENTAL_PROVIDER" | shellQuote}}
+      {{else if eq OS "darwin"}}
+      test -S {{.DOCKER_DESKTOP_SOCKET | shellQuote}} && echo docker || echo podman
+      {{else}}
+      echo docker
+      {{end}}
+  TILT_PORT: '{{env "TILT_PORT" | default "10350"}}'
+
+# Pass the same provider to kind and the registry commands in included tasks.
+env:
+  KIND_EXPERIMENTAL_PROVIDER: '{{.RUNTIME}}'
+
+includes:
+  registry:
+    taskfile: tilt/Taskfile.registry.yml
+    dir: tilt
+    aliases: [r]
+  cluster:
+    taskfile: tilt/Taskfile.cluster.yml
+    dir: tilt
+    aliases: [c]
+
+tasks:
+  runtime:
+    desc: Show the selected container runtime
+    silent: true
+    requires:
+      vars:
+        - name: RUNTIME
+          enum: [docker, podman]
+    preconditions:
+      - sh: test "$KIND_EXPERIMENTAL_PROVIDER" = "{{.RUNTIME}}"
+        msg: Unset KIND_EXPERIMENTAL_PROVIDER for the platform default, or set it to docker or podman.
+    cmd: echo "{{.RUNTIME}}"
+
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+    silent: true
+
+  up:
+    desc: Start the local registry, kind cluster, and Tilt
+    aliases: [u]
+    summary: |
+      Starts the local registry, the kind cluster (kind-rmk8soperator),
+      then Tilt in the foreground. Use task down from another terminal
+      to stop Tilt and delete the cluster while retaining the registry.
+    cmds:
+      - task: cluster:up
+      - task: tilt:up
+
+  down:
+    desc: Stop Tilt and delete the kind cluster
+    aliases: [d]
+    summary: |
+      Stops this checkout's Tilt process before deleting the kind cluster.
+      The local registry is left running so the next task up can reuse it.
+    cmds:
+      - task: tilt:stop
+      - task: cluster:down
+
+  clean:
+    desc: Reset the kind cluster and local registry
+    summary: |
+      Stops Tilt, deletes the kind cluster, and removes the local registry.
+      Resources that are already gone are skipped.
+    cmds:
+      - task: down
+      - task: registry:down
+
+  tilt:up:
+    desc: Start the Tilt development environment
+    interactive: true
+    aliases:
+      - t:u
+    cmds:
+      - tilt up --context kind-rmk8soperator --host 127.0.0.1 --port {{.TILT_PORT}}
+
+  tilt:stop:
+    desc: Stop this checkout's Tilt process, keeping cluster resources
+    cmd: bash tilt/stop.sh "{{.ROOT_DIR}}/Tiltfile" "{{.TILT_PORT}}"
+
+  tilt:down:
+    desc: Stop Tilt and delete its resources, keeping the kind cluster
+    aliases:
+      - t:d
+    cmds:
+      - task: tilt:stop
+      - tilt down --context kind-rmk8soperator

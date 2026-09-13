@@ -129,6 +129,9 @@ venv.bak/
 # mkdocs documentation
 /site
 
+# Tilt-exported webhook CA PEM (written by tilt/export-ca.sh)
+tilt/.certs/
+
 # Ruff
 .ruff_cache/
 

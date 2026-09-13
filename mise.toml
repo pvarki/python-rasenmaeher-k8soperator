@@ -1,0 +1,7 @@
+[tools]
+helm = "latest"
+kind = "latest"
+kubectl = "latest"
+task = "latest"
+tilt = "latest"
+uv = "latest"

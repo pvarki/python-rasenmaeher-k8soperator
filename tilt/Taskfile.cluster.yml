@@ -1,0 +1,33 @@
+version: "3"
+
+tasks:
+  up:
+    desc: Start the kind development cluster
+    summary: |
+      Uses Docker Engine on Linux. On macOS, detects Docker Desktop's backend
+      socket and otherwise defaults to Podman.
+      Set KIND_EXPERIMENTAL_PROVIDER=docker or podman to override the provider
+      for cluster, registry, and Tilt commands.
+      On Windows, run from WSL2 with Docker Desktop integration or a remote
+      client connected to a rootful Podman machine; see README.rst for setup.
+    aliases: [u]
+    cmds:
+      - task: :registry:up
+      - task: create
+      - kind export kubeconfig --name rmk8soperator
+      - bash connect-registry.sh
+      - kubectl --context kind-rmk8soperator apply -f registry.yaml
+
+  create:
+    internal: true
+    status:
+      - kind get clusters | grep -Fxq rmk8soperator
+    cmd: kind create cluster --name rmk8soperator --wait 120s
+
+  down:
+    desc: Delete the kind development cluster
+    aliases: [d]
+    deps: [":runtime"]
+    cmds:
+      - kind delete cluster --name rmk8soperator
+      - rm -f .certs/ca.crt

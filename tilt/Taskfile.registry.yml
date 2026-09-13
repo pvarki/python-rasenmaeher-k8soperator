@@ -1,0 +1,29 @@
+version: "3"
+
+tasks:
+  up:
+    desc: Start the local container registry
+    aliases: [u]
+    deps: [":runtime"]
+    cmds:
+      - '"{{.RUNTIME}}" info > /dev/null'
+      - task: create
+      - '"{{.RUNTIME}}" start rmk8soperator-registry'
+
+  create:
+    internal: true
+    status:
+      - '"{{.RUNTIME}}" container inspect rmk8soperator-registry > /dev/null 2>&1'
+    cmd: >-
+      "{{.RUNTIME}}" run -d --restart=always
+      -p 127.0.0.1:5005:5000 --name rmk8soperator-registry docker.io/library/registry:3
+
+  down:
+    desc: Stop and remove the local container registry
+    aliases: [d]
+    deps: [":runtime"]
+    preconditions:
+      - '"{{.RUNTIME}}" info > /dev/null'
+    status:
+      - '! "{{.RUNTIME}}" container inspect rmk8soperator-registry > /dev/null 2>&1'
+    cmd: '"{{.RUNTIME}}" rm -f rmk8soperator-registry'

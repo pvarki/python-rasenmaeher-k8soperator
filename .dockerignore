@@ -7,6 +7,8 @@
 # docker build files (so just changing them does not invalidate *all* caches)
 .dockerignore
 Dockerfile
+Tiltfile
+tilt/
 
 # Byte-compiled / optimized / DLL files
 **/__pycache__/

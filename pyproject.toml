@@ -1,14 +1,14 @@
 [project]
 name = "rmk8soperator"
-version = "0.1.0+260912"
+version = "0.1.1+260913"
 description = "K8s Operator and CRDs with core RASENMAEHER entities"
 authors = [{name="Eero af Heurlin", email="eero.afheurlin@iki.fi" }]
 homepage = "https://github.com/pvarki/python-rasenmaeher-k8soperator"
 repository = "https://github.com/pvarki/python-rasenmaeher-k8soperator"
 license = "MIT"
 readme = "README.rst"
-requires-python = ">=3.12,<4.0"
-dependencies = ["libadvian>=1.7,<2.0", "click>=8.1,<9.0"]
+requires-python = ">=3.14,<4.0"
+dependencies = ["libadvian>=1.7,<2.0", "click>=8.1,<9.0", "cloudcoil[operator]>=0.8,<1.0"]
 
 [project.scripts]
 rmk8soperator = "rmk8soperator.console:rmk8soperator_cli"
@@ -16,7 +16,7 @@ rmk8soperator = "rmk8soperator.console:rmk8soperator_cli"
 
 [tool.ruff]
 line-length = 120
-target-version = "py312"
+target-version = "py314"
 extend-exclude = ["_build", "buck-out"]
 
 [tool.ruff.lint]
@@ -27,12 +27,12 @@ ignore = ["PLR2004"]
 [tool.pyrefly]
 preset = "strict"
 project-includes = ["src", "tests"]
-search-path = ["src"]
-python-version = "3.12"
+search-path = ["src", "."]
+python-version = "3.14"
 
 [tool.pytest.ini_options]
 junit_family="xunit2"
-addopts="--cov=rmk8soperator --cov-fail-under=65 --cov-branch"
+addopts="-p no:cloudcoil --cov=rmk8soperator --cov-fail-under=65 --cov-branch"
 asyncio_mode="strict"
 asyncio_default_fixture_loop_scope="function"
 

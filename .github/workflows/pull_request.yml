@@ -58,7 +58,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13", "3.14"]
+        python-version: ["3.14"]
     steps:
       - uses: actions/checkout@v6
       - uses: pvarki/config-ci-library/.github/actions/setup-python@main
@@ -122,9 +122,80 @@ jobs:
           --target production --file Dockerfile_${{ matrix.variant }}
           --tag rmk8soperator:production-${{ matrix.variant }} .
 
+  runtime-selection:
+    name: Container runtime on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            runtime: docker
+          - os: macos-latest
+            runtime: podman
+          - os: windows-latest
+            runtime: docker
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v4
+        with:
+          install_args: task
+      - name: Check native defaults and explicit overrides
+        shell: bash
+        run: |
+          test "$(task --silent runtime)" = '${{ matrix.runtime }}'
+          test "$(KIND_EXPERIMENTAL_PROVIDER=docker task --silent runtime)" = docker
+          test "$(KIND_EXPERIMENTAL_PROVIDER=podman task --silent runtime)" = podman
+          if KIND_EXPERIMENTAL_PROVIDER=invalid task --silent runtime; then exit 1; fi
+          if KIND_EXPERIMENTAL_PROVIDER= task --silent runtime; then exit 1; fi
+
+  docker-dev-environment:
+    name: kind and Tilt on Linux Docker
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: jdx/mise-action@v4
+      - name: Create and reuse the cluster with the Linux default
+        run: |
+          test "$(task --silent runtime)" = docker
+          docker info
+          task cluster:up
+          task cluster:up
+      - name: Bootstrap webhook certificates
+        run: tilt ci --context kind-rmk8soperator --timeout 5m --port-forwards=false
+      - name: Build and deploy through the local registry
+        run: |
+          test -s tilt/.certs/ca.crt
+          tilt ci --context kind-rmk8soperator --timeout 10m --port-forwards=false
+          image="$(kubectl --context kind-rmk8soperator -n opendefence-system \
+            get deployment opendefence-platform -o jsonpath='{.spec.template.spec.containers[0].image}')"
+          case "$image" in
+            localhost:5005/*) ;;
+            *) echo "Operator image did not use the local registry: $image" >&2; exit 1 ;;
+          esac
+      - name: Verify reconciliation and restart with existing resources
+        run: |
+          kubectl --context kind-rmk8soperator apply -f examples/demo.yaml
+          kubectl --context kind-rmk8soperator wait --for=condition=ReferencesResolved \
+            odrole,odgroup,oduser,odinvite --all --timeout=60s
+          kubectl --context kind-rmk8soperator -n opendefence-system \
+            rollout restart deployment/opendefence-platform
+          kubectl --context kind-rmk8soperator -n opendefence-system \
+            rollout status deployment/opendefence-platform --timeout=120s
+      - name: Diagnose failures
+        if: failure()
+        run: |
+          docker ps -a
+          kubectl --context kind-rmk8soperator get pods -A
+          kubectl --context kind-rmk8soperator -n opendefence-system \
+            logs deployment/opendefence-platform --all-containers --tail=100
+      - name: Clean up the cluster and registry
+        if: always()
+        run: task clean
+
   publish:
     name: Publish Docker image
-    needs: [version-check, check-project-setup, pre-commit, test, docker-build-and-verify]
+    needs: [version-check, check-project-setup, pre-commit, test, docker-build-and-verify, runtime-selection, docker-dev-environment]
     if: >-
       github.event_name == 'pull_request' &&
       github.event.pull_request.head.repo.full_name == github.repository
