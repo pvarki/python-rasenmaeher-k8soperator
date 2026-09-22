@@ -183,6 +183,14 @@ k8s_resource(
     resource_deps=["operator-crds-rbac", "export-webhook-ca"],
 )
 
+k8s_yaml("tilt/rmapi.yaml")
+k8s_resource(
+    "rmapi",
+    objects=["rmapi:ingressroute:%s" % OPERATOR_NS],
+    port_forwards="%s:8000" % os.getenv("RMAPI_FORWARD_PORT", "18000"),
+    resource_deps=["public-tls"],
+)
+
 local_resource(
     "webhook-ready",
     "./tilt/wait-webhook.sh",
