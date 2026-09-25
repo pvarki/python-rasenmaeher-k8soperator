@@ -7,9 +7,9 @@ from cloudcoil.admission import AdmissionDenied, AdmissionRequest
 from cloudcoil.apimachinery import ObjectMeta
 from cloudcoil.errors import ResourceNotFound
 
-from operator.controllers.groups import validate_group
-from operator.controllers.users import validate_user_delete
-from operator.models.v1alpha1 import (
+from k8soperator.controllers.groups import validate_group
+from k8soperator.controllers.users import validate_user_delete
+from k8soperator.models.v1alpha1 import (
     API_VERSION,
     Group,
     GroupSpec,

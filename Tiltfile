@@ -114,7 +114,7 @@ watch_file(CA_FILE)
 if not os.path.exists(CA_FILE):
     exit("Waiting for cert-manager to issue the local webhook CA")
 
-watch_file("src/rmk8soperator/models")
+watch_file("src/k8soperator/models")
 k8s_yaml(
     local(
         "uv run --locked rmk8soperator manifests --image %s --ca-file %s"

@@ -4,10 +4,10 @@ from typing import Any
 
 from cloudcoil.controller import Controller
 
-from operator.controllers.groups import groups
-from operator.controllers.invites import invites
-from operator.controllers.roles import roles
-from operator.controllers.users import users
+from k8soperator.controllers.groups import groups
+from k8soperator.controllers.invites import invites
+from k8soperator.controllers.roles import roles
+from k8soperator.controllers.users import users
 
 ALL_CONTROLLERS: tuple[Controller[Any], ...] = (users, groups, roles, invites)
 

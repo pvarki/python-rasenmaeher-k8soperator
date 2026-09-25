@@ -2,9 +2,9 @@
 
 from cloudcoil.controller import Context, Controller
 
-from operator.controllers._events import recorder
-from operator.controllers._refs import mark_resolved
-from operator.models.v1alpha1 import Role
+from k8soperator.controllers._events import recorder
+from k8soperator.controllers._refs import mark_resolved
+from k8soperator.models.v1alpha1 import Role
 
 roles = Controller(Role, name="roles", events=recorder("roles"))
 

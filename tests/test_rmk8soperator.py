@@ -1,6 +1,6 @@
 """Package level tests"""
 
-from operator import __version__
+from k8soperator import __version__
 
 
 def test_version() -> None:

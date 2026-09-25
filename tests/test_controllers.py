@@ -9,19 +9,19 @@ from cloudcoil.apimachinery import ObjectMeta
 from cloudcoil.controller import Context, Controller, ResourceKey, TerminalError, Wait
 from cloudcoil.resources import Resource
 
-from operator.controllers import groups, invites, users
-from operator.controllers._refs import referrers_of, resolve_refs
-from operator.controllers.groups import manager_changed, parent_group_changed, reconcile_group
-from operator.controllers.groups import role_changed as group_role_changed
-from operator.controllers.invites import group_changed as invite_group_changed
-from operator.controllers.invites import reconcile_invite
-from operator.controllers.invites import role_changed as invite_role_changed
-from operator.controllers.roles import reconcile_role
-from operator.controllers.users import group_changed as user_group_changed
-from operator.controllers.users import reconcile_user
-from operator.controllers.users import role_changed as user_role_changed
-from operator.controllers.users import userbinding_changed
-from operator.models.v1alpha1 import (
+from k8soperator.controllers import groups, invites, users
+from k8soperator.controllers._refs import referrers_of, resolve_refs
+from k8soperator.controllers.groups import manager_changed, parent_group_changed, reconcile_group
+from k8soperator.controllers.groups import role_changed as group_role_changed
+from k8soperator.controllers.invites import group_changed as invite_group_changed
+from k8soperator.controllers.invites import reconcile_invite
+from k8soperator.controllers.invites import role_changed as invite_role_changed
+from k8soperator.controllers.roles import reconcile_role
+from k8soperator.controllers.users import group_changed as user_group_changed
+from k8soperator.controllers.users import reconcile_user
+from k8soperator.controllers.users import role_changed as user_role_changed
+from k8soperator.controllers.users import userbinding_changed
+from k8soperator.models.v1alpha1 import (
     API_VERSION,
     Group,
     GroupSpec,
@@ -37,7 +37,7 @@ from operator.models.v1alpha1 import (
     UserSpec,
     is_synced,
 )
-from operator.models.v1alpha1.common import PlatformCondition
+from k8soperator.models.v1alpha1.common import PlatformCondition
 from tests.conftest import FakeCache, FakeContext
 
 

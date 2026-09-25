@@ -3,8 +3,8 @@
 from cloudcoil.application import Application, WebhookServer
 from cloudcoil.controller import HealthServer
 
-from operator.controllers import ALL_CONTROLLERS
-from operator.models.v1alpha1 import UserBinding
+from k8soperator.controllers import ALL_CONTROLLERS
+from k8soperator.models.v1alpha1 import UserBinding
 
 app = Application(
     "opendefence-platform",

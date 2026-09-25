@@ -18,7 +18,7 @@ spec:
       containers:
         - name: rmapi
           image: rmk8soperator
-          args: ["uvicorn", "rmapi.app:app", "--host", "0.0.0.0", "--port", "8000"]
+          args: ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
           env:
             - name: RMAPI_DNS
               value: localmaeher.dev.pvarki.fi
