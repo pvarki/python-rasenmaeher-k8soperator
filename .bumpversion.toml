@@ -21,7 +21,12 @@ search = "rmk8soperator:{current_version}"
 replace = "rmk8soperator:{new_version}"
 
 [[tool.bumpversion.files]]
-filename = "src/rmk8soperator/__init__.py"
+filename = "src/k8soperator/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "src/cli/__init__.py"
 search = '__version__ = "{current_version}"'
 replace = '__version__ = "{new_version}"'
 
