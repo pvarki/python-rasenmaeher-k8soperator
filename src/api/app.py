@@ -2,8 +2,8 @@
 
 from fastapi import FastAPI
 
-from rmapi import __version__
-from rmapi.config import config
+from api import __version__
+from api.config import config
 
 app = FastAPI(title="rmapi", version=__version__)
 

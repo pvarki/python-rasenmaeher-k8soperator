@@ -5,9 +5,9 @@ from collections.abc import Sequence
 from cloudcoil.admission import AdmissionDenied, AdmissionRequest
 from cloudcoil.controller import Context, Controller, ResourceKey
 
-from rmk8soperator.controllers._events import recorder
-from rmk8soperator.controllers._refs import mark_resolved, referrers_of, resolve_refs
-from rmk8soperator.models.v1alpha1 import (
+from operator.controllers._events import recorder
+from operator.controllers._refs import mark_resolved, referrers_of, resolve_refs
+from operator.models.v1alpha1 import (
     BINDINGS_SYNCED_CONDITION,
     BindingObservation,
     Group,

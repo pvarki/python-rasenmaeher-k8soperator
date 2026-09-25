@@ -7,8 +7,8 @@ import pytest
 from click.testing import CliRunner
 from libadvian.binpackers import ensure_str
 
-from rmk8soperator import __version__
-from rmk8soperator.console import rmk8soperator_cli
+from operator import __version__
+from operator.console import rmk8soperator_cli
 
 
 @pytest.mark.asyncio

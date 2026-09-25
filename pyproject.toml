@@ -17,7 +17,7 @@ dependencies = [
 ]
 
 [project.scripts]
-rmk8soperator = "rmk8soperator.console:rmk8soperator_cli"
+rmk8soperator = "operator.console:rmk8soperator_cli"
 
 
 [tool.ruff]
@@ -38,7 +38,7 @@ python-version = "3.14"
 
 [tool.pytest.ini_options]
 junit_family="xunit2"
-addopts="-p no:cloudcoil --cov=rmk8soperator --cov-fail-under=65 --cov-branch"
+addopts="-p no:cloudcoil --cov=operator --cov-fail-under=65 --cov-branch"
 asyncio_mode="strict"
 asyncio_default_fixture_loop_scope="function"
 
@@ -65,4 +65,4 @@ requires = ["hatchling>=1.27,<2.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/rmk8soperator", "src/rmapi"]
+packages = ["src/operator", "src/api"]

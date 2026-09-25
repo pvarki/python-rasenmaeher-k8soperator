@@ -8,7 +8,7 @@ from cloudcoil.crd import ListType, PrinterColumn, custom_resource
 from cloudcoil.pydantic import BaseModel
 from cloudcoil.resources import Resource
 
-from rmk8soperator.models.v1alpha1.common import API_VERSION, ObjectRef, PlatformStatus, ResolvedRef
+from operator.models.v1alpha1.common import API_VERSION, ObjectRef, PlatformStatus, ResolvedRef
 
 
 class GroupSpec(BaseModel):

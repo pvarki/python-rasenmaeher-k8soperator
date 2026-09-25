@@ -1,6 +1,6 @@
 """Package level tests"""
 
-from rmk8soperator import __version__
+from operator import __version__
 
 
 def test_version() -> None:

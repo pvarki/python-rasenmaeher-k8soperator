@@ -2,7 +2,7 @@
 
 from dataclasses import replace
 
-from rmk8soperator.app import app
+from operator.app import app
 
 TEST_CA_PEM = b"-----BEGIN CERTIFICATE-----\nTEST\n-----END CERTIFICATE-----\n"
 
