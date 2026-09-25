@@ -25,6 +25,10 @@ COPY ./docker /app/docker/
 WORKDIR /app
 RUN mkdir -p src/k8soperator \
     && echo '"""placeholder"""' >src/k8soperator/__init__.py \
+    && mkdir -p src/api \
+    && echo '"""placeholder"""' >src/api/__init__.py \
+    && mkdir -p src/cli \
+    && echo '"""placeholder"""' >src/cli/__init__.py \
     && uv sync --locked \
     && export SKIP="pyrefly,uv-lock" \
     && uv run --locked docker/prek_init.sh \
@@ -142,6 +146,10 @@ WORKDIR /pysetup
 RUN . /.venv/bin/activate \
     && mkdir -p src/k8soperator \
     && echo '"""placeholder"""' >src/k8soperator/__init__.py \
+    && mkdir -p src/api \
+    && echo '"""placeholder"""' >src/api/__init__.py \
+    && mkdir -p src/cli \
+    && echo '"""placeholder"""' >src/cli/__init__.py \
     && uv sync --locked \
     && true
 

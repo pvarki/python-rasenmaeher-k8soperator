@@ -13,11 +13,13 @@ dependencies = [
     "click>=8.1,<9.0",
     "cloudcoil[operator]>=0.8,<1.0",
     "fastapi>=0.115,<1.0",
+    "httpx>=0.28,<1.0",
     "pydantic-settings>=2.0,<3.0",
 ]
 
 [project.scripts]
 rmk8soperator = "k8soperator.console:rmk8soperator_cli"
+rmcli = "cli.console:rmcli"
 
 
 [tool.ruff]
@@ -38,7 +40,7 @@ python-version = "3.14"
 
 [tool.pytest.ini_options]
 junit_family="xunit2"
-addopts="-p no:cloudcoil --cov=k8soperator --cov-fail-under=65 --cov-branch"
+addopts="-p no:cloudcoil --cov=k8soperator --cov=cli --cov-fail-under=65 --cov-branch"
 asyncio_mode="strict"
 asyncio_default_fixture_loop_scope="function"
 
@@ -65,4 +67,4 @@ requires = ["hatchling>=1.27,<2.0"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/k8soperator", "src/api"]
+packages = ["src/k8soperator", "src/api", "src/cli"]
