@@ -4,6 +4,7 @@ from fastapi import APIRouter, HTTPException, status
 
 from api.lib.common.invites import CallsignTaken, InvalidCallsign, InviteNotRedeemable, find_invite, redeem
 from api.lib.common.jwt import issue
+from api.lib.middleware.jwt import JWTUser
 from api.routes.enrollment.schema import CheckRequest, CheckResponse, EnrollmentStatus, EnrollRequest, EnrollResponse
 
 router = APIRouter(prefix="/enrollment", tags=["enrollment"])
@@ -30,3 +31,9 @@ async def enroll(request: EnrollRequest) -> EnrollResponse:
     except InvalidCallsign as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
     return EnrollResponse(status=EnrollmentStatus.from_resource(user), token=issue(user))
+
+
+@router.get("")
+async def enrollment_status(user: JWTUser) -> EnrollmentStatus:
+    """Enrollment status of the calling user, polled while waiting for approval."""
+    return EnrollmentStatus.from_resource(user)
