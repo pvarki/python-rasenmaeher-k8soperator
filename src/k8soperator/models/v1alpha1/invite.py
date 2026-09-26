@@ -47,6 +47,12 @@ class InviteSpec(BaseModel):
 class InviteStatus(PlatformStatus):
     """Current reconciliation state of an invite."""
 
+    used: Annotated[int, PrinterColumn(name="Used")] = Field(
+        default=0,
+        ge=0,
+        description="Number of times the invite has been redeemed.",
+    )
+
 
 @custom_resource(
     api_version=API_VERSION,
