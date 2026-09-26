@@ -37,6 +37,11 @@ class InviteSpec(BaseModel):
         alias="validUntil",
         description=("RFC 3339 timestamp after which the invite can no longer be redeemed; omit for no expiration."),
     )
+    auto_approve: bool = Field(
+        default=False,
+        alias="autoApprove",
+        description="Whether users created from this invite are approved automatically.",
+    )
 
 
 class InviteStatus(PlatformStatus):
