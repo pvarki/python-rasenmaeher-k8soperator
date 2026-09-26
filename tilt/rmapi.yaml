@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rmapi
+  namespace: opendefence-system
+  labels:
+    app: rmapi
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rmapi
+  template:
+    metadata:
+      labels:
+        app: rmapi
+    spec:
+      containers:
+        - name: rmapi
+          image: rmk8soperator
+          args: ["uvicorn", "api.app:app", "--host", "0.0.0.0", "--port", "8000"]
+          env:
+            - name: RMAPI_DNS
+              value: localmaeher.dev.pvarki.fi
+          ports:
+            - name: http
+              containerPort: 8000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rmapi
+  namespace: opendefence-system
+spec:
+  selector:
+    app: rmapi
+  ports:
+    - name: http
+      port: 8000
+      targetPort: http
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: rmapi
+  namespace: opendefence-system
+spec:
+  entryPoints:
+    - websecure
+  routes:
+    - kind: Rule
+      match: Host(`localmaeher.dev.pvarki.fi`) && PathPrefix(`/api`)
+      priority: 200
+      services:
+        - name: rmapi
+          port: 8000
+    - kind: Rule
+      match: Host(`mtls.localmaeher.dev.pvarki.fi`) && PathPrefix(`/api`)
+      priority: 200
+      services:
+        - name: rmapi
+          port: 8000
+  tls: {}

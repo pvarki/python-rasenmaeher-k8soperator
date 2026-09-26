@@ -6,7 +6,7 @@ from cloudcoil.crd import PrinterColumn, custom_resource
 from cloudcoil.pydantic import BaseModel
 from cloudcoil.resources import Resource
 
-from rmk8soperator.models.v1alpha1.common import API_VERSION, ObjectRef, PlatformStatus
+from k8soperator.models.v1alpha1.common import API_VERSION, ObjectRef, PlatformStatus
 
 SYNCED_CONDITION = "Synced"
 

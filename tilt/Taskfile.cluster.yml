@@ -22,7 +22,7 @@ tasks:
     internal: true
     status:
       - kind get clusters | grep -Fxq rmk8soperator
-    cmd: kind create cluster --name rmk8soperator --wait 120s
+    cmd: kind create cluster --name rmk8soperator --config kind-config.yaml --wait 120s
 
   down:
     desc: Delete the kind development cluster

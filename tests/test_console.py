@@ -7,14 +7,14 @@ import pytest
 from click.testing import CliRunner
 from libadvian.binpackers import ensure_str
 
-from rmk8soperator import __version__
-from rmk8soperator.console import rmk8soperator_cli
+from k8soperator import __version__
+from k8soperator.console import rmk8soperator_cli
 
 
 @pytest.mark.asyncio
 async def test_version_cli() -> None:
     """Test the CLI parsing for default version dumping works"""
-    cmd = f"{sys.executable} -m rmk8soperator --version"
+    cmd = f"{sys.executable} -m k8soperator --version"
     process = await asyncio.create_subprocess_shell(
         cmd,
         stdout=asyncio.subprocess.PIPE,
@@ -30,7 +30,7 @@ async def test_version_cli() -> None:
 @pytest.mark.asyncio
 async def test_cli_manifests() -> None:
     """manifests prints CRD YAML without talking to a cluster."""
-    cmd = f"{sys.executable} -m rmk8soperator manifests --without-webhooks"
+    cmd = f"{sys.executable} -m k8soperator manifests --without-webhooks"
     process = await asyncio.create_subprocess_shell(
         cmd,
         stdout=asyncio.subprocess.PIPE,

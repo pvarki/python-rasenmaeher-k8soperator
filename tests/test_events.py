@@ -8,8 +8,8 @@ import pytest
 from cloudcoil.apimachinery import ObjectMeta
 from cloudcoil.client import Config
 
-from rmk8soperator.controllers._events import recorder
-from rmk8soperator.models.v1alpha1 import API_VERSION, User, UserSpec
+from k8soperator.controllers._events import recorder
+from k8soperator.models.v1alpha1 import API_VERSION, User, UserSpec
 
 
 def _user(name: str, *, namespace: str | None = None) -> User:
