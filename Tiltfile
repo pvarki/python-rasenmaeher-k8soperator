@@ -187,7 +187,13 @@ k8s_resource(
 k8s_yaml("tilt/rmapi.yaml")
 k8s_resource(
     "rmapi",
-    objects=["rmapi:ingressroute:%s" % OPERATOR_NS],
+    objects=[
+        "rmapi:ingressroute:%s" % OPERATOR_NS,
+        "rmapi:serviceaccount:%s" % OPERATOR_NS,
+        "rmapi:clusterrole:default",
+        "rmapi:clusterrolebinding:default",
+        "rmapi-jwt:certificate:%s" % OPERATOR_NS,
+    ],
     port_forwards="%s:8000" % os.getenv("RMAPI_FORWARD_PORT", "18000"),
     resource_deps=["public-tls"],
 )

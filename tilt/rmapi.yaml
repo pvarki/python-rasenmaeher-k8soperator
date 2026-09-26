@@ -1,3 +1,48 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rmapi
+  namespace: opendefence-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: rmapi
+rules:
+  - apiGroups: ["platform.opendefence.fi"]
+    resources: ["users", "invites"]
+    verbs: ["get", "list", "create"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rmapi
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: rmapi
+subjects:
+  - kind: ServiceAccount
+    name: rmapi
+    namespace: opendefence-system
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: rmapi-jwt
+  namespace: opendefence-system
+spec:
+  secretName: rmapi-jwt  # pragma: allowlist secret
+  commonName: rmapi-jwt
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  usages:
+    - digital signature
+  issuerRef:
+    name: operator-ca
+    kind: Issuer
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +60,7 @@ spec:
       labels:
         app: rmapi
     spec:
+      serviceAccountName: rmapi
       containers:
         - name: rmapi
           image: rmk8soperator
@@ -22,9 +68,20 @@ spec:
           env:
             - name: RMAPI_DNS
               value: localmaeher.dev.pvarki.fi
+            - name: RMAPI_JWT_KEY_PATH
+              value: /data/persistent/private/jwt.key
           ports:
             - name: http
               containerPort: 8000
+          volumeMounts:
+            - name: jwt
+              mountPath: /data/persistent/private/jwt.key
+              subPath: tls.key
+              readOnly: true
+      volumes:
+        - name: jwt
+          secret:
+            secretName: rmapi-jwt  # pragma: allowlist secret
 ---
 apiVersion: v1
 kind: Service
