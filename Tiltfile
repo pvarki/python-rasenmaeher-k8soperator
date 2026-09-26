@@ -216,10 +216,11 @@ k8s_resource(
     objects=[
         "rmapi:ingressroute:%s" % OPERATOR_NS,
         "rmapi:serviceaccount:%s" % OPERATOR_NS,
-        "rmapi-users:clusterrole",
-        "rmapi-users:clusterrolebinding",
+        "rmapi:clusterrole:default",
+        "rmapi:clusterrolebinding:default",
         "rmapi-user-certs:role:%s" % EXTERNAL_CERTS_NS,
         "rmapi-user-certs:rolebinding:%s" % EXTERNAL_CERTS_NS,
+        "rmapi-jwt:certificate:%s" % OPERATOR_NS,
     ],
     port_forwards="%s:8000" % os.getenv("RMAPI_FORWARD_PORT", "18000"),
     resource_deps=["public-tls", "user-certs-ns"],
