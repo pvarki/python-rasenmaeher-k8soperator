@@ -10,8 +10,14 @@ metadata:
   name: rmapi
 rules:
   - apiGroups: ["platform.opendefence.fi"]
-    resources: ["users", "invites"]
+    resources: ["users"]
     verbs: ["get", "list", "create"]
+  - apiGroups: ["platform.opendefence.fi"]
+    resources: ["invites"]
+    verbs: ["get", "list", "create"]
+  - apiGroups: ["platform.opendefence.fi"]
+    resources: ["invites/status"]
+    verbs: ["patch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
