@@ -7,11 +7,18 @@ import click
 import httpx
 
 from libadvian.logging import init_logging
+from cloudcoil.apimachinery import ObjectMeta
+from cloudcoil.errors import APIError
+
+from api.lib.common.codes import generate_code
 from cli import __version__
+from k8soperator.models.v1alpha1.common import API_VERSION, ObjectRef
+from k8soperator.models.v1alpha1.invite import Invite, InviteSpec
 
 
 LOGGER = logging.getLogger(__name__)
 DEFAULT_API_URL = "http://rmapi.opendefence-system.svc.cluster.local:8000"
+ADMIN_CODE_LENGTH = 16
 
 
 def _configure_logging(loglevel: int, verbose: int) -> None:
@@ -55,3 +62,24 @@ def healthcheck(api_url: str, timeout: float) -> None:
     except httpx.HTTPError as exc:
         raise click.ClickException(f"Healthcheck failed: {exc}") from exc
     click.echo(json.dumps(response.json(), indent=2))
+
+
+@rmcli.command(name="addcode")
+def add_code() -> None:
+    """Create a single-use invite that makes an approved superadmin, and print its code."""
+    code = generate_code(ADMIN_CODE_LENGTH)
+    try:
+        Invite(
+            api_version=API_VERSION,
+            kind="Invite",
+            metadata=ObjectMeta(generate_name="admin-"),
+            spec=InviteSpec(
+                code=code,
+                role_refs=[ObjectRef(name="superadmin")],
+                use_count=1,
+                auto_approve=True,
+            ),
+        ).create()
+    except APIError as exc:
+        raise click.ClickException(f"Creating invite failed: {exc}") from exc
+    click.echo(code)
