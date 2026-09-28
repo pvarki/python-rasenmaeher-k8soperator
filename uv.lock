@@ -904,6 +904,7 @@ dependencies = [
     { name = "libadvian" },
     { name = "pydantic-settings" },
     { name = "pyjwt", extra = ["crypto"] },
+    { name = "uvicorn" },
 ]
 
 [package.dev-dependencies]
@@ -930,6 +931,7 @@ requires-dist = [
     { name = "libadvian", specifier = ">=1.7,<2.0" },
     { name = "pydantic-settings", specifier = ">=2.0,<3.0" },
     { name = "pyjwt", extras = ["crypto"], specifier = ">=2.15,<3.0" },
+    { name = "uvicorn", specifier = ">=0.35,<1.0" },
 ]
 
 [package.metadata.requires-dev]
