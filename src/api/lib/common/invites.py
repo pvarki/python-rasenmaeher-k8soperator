@@ -4,6 +4,7 @@ from datetime import UTC, datetime
 from http import HTTPStatus
 
 from cloudcoil.apimachinery import ObjectMeta
+from cloudcoil.controller import get_condition
 from cloudcoil.errors import APIError, ResourceConflict
 
 from api.lib.common.codes import generate_code
@@ -16,7 +17,7 @@ UNLIMITED = -1
 
 
 class InviteNotRedeemable(Exception):
-    """No invite with the code, or it is expired or used up"""
+    """No invite with the code, or it is not ready, expired or used up"""
 
 
 class CallsignTaken(Exception):
@@ -51,14 +52,18 @@ def _used(invite: Invite) -> int:
     return invite.status.used if invite.status else 0
 
 
+def _is_ready(invite: Invite) -> bool:
+    ready = get_condition(invite, "Ready")
+    return ready is not None and ready.status == "True"
+
+
 def _is_redeemable(invite: Invite) -> bool:
     expired = invite.spec.valid_until is not None and invite.spec.valid_until <= datetime.now(UTC)
     used_up = invite.spec.use_count != UNLIMITED and _used(invite) >= invite.spec.use_count
-    return not expired and not used_up
+    return _is_ready(invite) and not expired and not used_up
 
 
 def _new_user(invite: Invite, callsign: str) -> User:
-    assert invite.name is not None
     return User(
         api_version=API_VERSION,
         kind="User",
@@ -95,5 +100,7 @@ async def _use(invite: Invite) -> None:
             ],
             subresource="status",
         )
-    except APIError as exc: # Other user got here first
-        raise InviteNotRedeemable from exc
+    except APIError as exc:
+        if exc.status_code != HTTPStatus.UNPROCESSABLE_ENTITY:
+            raise
+        raise InviteNotRedeemable from exc  # Other user got here first
