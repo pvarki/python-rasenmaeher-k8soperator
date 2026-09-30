@@ -50,6 +50,10 @@ helm_resource(
         CERT_MANAGER_VERSION,
         "--set",
         "crds.enabled=true",
+        "--set",
+        "crds.enabled=true",
+        "--set",
+        "enableCertificateOwnerRef=true",
     ],
     resource_deps=["jetstack"],
 )
@@ -80,6 +84,19 @@ k8s_resource(
         "operator-tls:certificate:%s" % OPERATOR_NS,
     ],
     resource_deps=["cert-manager", "operator-ns"],
+)
+
+k8s_yaml("tilt/pki.yaml")
+k8s_resource(
+    new_name="pki",
+    objects=[
+        "selfsigned-issuer:clusterissuer",
+        "external-root-ca:certificate:cert-manager",
+        "external-root-issuer:clusterissuer",
+        "external-ca:certificate:cert-manager",
+        "external-ca-issuer:clusterissuer",
+    ],
+    resource_deps=["cert-manager"],
 )
 
 k8s_yaml(

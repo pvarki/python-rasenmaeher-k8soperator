@@ -1,0 +1,66 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: external-root-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  secretName: external-root-secret  # pragma: allowlist secret
+  commonName: localmaeher External Root CA
+  duration: 87600h
+  subject:
+    organizations: [PVARKI]
+    organizationalUnits: [localmaeher]
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: external-root-issuer
+spec:
+  ca:
+    secretName: external-root-secret  # pragma: allowlist secret
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: external-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  secretName: external-ca-secret  # pragma: allowlist secret
+  commonName: localmaeher External CA
+  duration: 43800h
+  subject:
+    organizations: [PVARKI]
+    organizationalUnits: [localmaeher]
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: external-root-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: external-ca-issuer
+spec:
+  ca:
+    secretName: external-ca-secret  # pragma: allowlist secret
+    ocspServers:
+    - "http://rmapi.opendefence-system.svc.cluster.local:8000/api/v1/ocsp"
