@@ -6,6 +6,7 @@ import logging
 from typing import Any, Literal
 
 from libadvian.logging import init_logging
+from cloudcoil.errors import ResourceNotFound
 from cloudcoil.resources import Resource
 
 init_logging(logging.DEBUG)
@@ -27,13 +28,36 @@ class FakeCache[T: Resource]:
         return list(self._objects.values())
 
 
-class FakeContext:
-    """Narrow test double for Context status and cache operations."""
+class FakeClient[T: Resource]:
+    """In-memory stand-in for a typed API client; records deletes."""
 
-    def __init__(self, caches: dict[type[Resource], FakeCache[Resource]] | None = None) -> None:
+    def __init__(self, objects: dict[tuple[str | None, str], T] | None = None) -> None:
+        self._objects = objects or {}
+        self.deleted: list[tuple[str | None, str]] = []
+
+    async def delete(self, name: str, namespace: str | None = None) -> T:
+        key = (namespace, name)
+        if key not in self._objects:
+            raise ResourceNotFound(f"{namespace}/{name} not found")
+        self.deleted.append(key)
+        return self._objects.pop(key)
+
+
+class FakeContext:
+    """Narrow test double for Context status, cache and client operations."""
+
+    def __init__(
+        self,
+        caches: dict[type[Resource], FakeCache[Resource]] | None = None,
+        clients: dict[type[Resource], FakeClient[Resource]] | None = None,
+    ) -> None:
         self._caches = caches or {}
+        self.clients = clients or {}
         self.status: dict[str, Any] = {}
         self.conditions: list[tuple[str, bool | Literal["Unknown"], str, str]] = []
+
+    async def client[U: Resource](self, resource: type[U]) -> FakeClient[U]:
+        return self.clients.setdefault(resource, FakeClient())  # type: ignore[return-value]
 
     def cached[U: Resource](self, resource: type[U]) -> FakeCache[U]:
         cache = self._caches.get(resource)

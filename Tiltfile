@@ -15,6 +15,7 @@ load("ext://namespace", "namespace_create")
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
 OPERATOR_NS = "opendefence-system"
+EXTERNAL_CERTS_NS = "opendefence-external-certs"
 OPERATOR_IMAGE = "rmk8soperator"
 KIND_CONTEXT = "kind-rmk8soperator"
 CA_FILE = "tilt/.certs/ca.crt"
@@ -86,6 +87,12 @@ k8s_resource(
     resource_deps=["cert-manager", "operator-ns"],
 )
 
+namespace_create(EXTERNAL_CERTS_NS)
+k8s_resource(
+    new_name="user-certs-ns",
+    objects=["%s:Namespace:default" % EXTERNAL_CERTS_NS],
+)
+
 k8s_yaml("tilt/pki.yaml")
 k8s_resource(
     new_name="pki",
@@ -154,8 +161,10 @@ k8s_resource(
         "opendefence-platform.%s:clusterrolebinding:default" % OPERATOR_NS,
         "opendefence-platform.%s:role:%s" % (OPERATOR_NS, OPERATOR_NS),
         "opendefence-platform.%s:rolebinding:%s" % (OPERATOR_NS, OPERATOR_NS),
+        "opendefence-platform.%s:role:%s" % (OPERATOR_NS, EXTERNAL_CERTS_NS),
+        "opendefence-platform.%s:rolebinding:%s" % (OPERATOR_NS, EXTERNAL_CERTS_NS),
     ],
-    resource_deps=["operator-ns"],
+    resource_deps=["operator-ns", "user-certs-ns"],
 )
 
 live_update_steps = [
@@ -197,7 +206,7 @@ k8s_resource(
         % OPERATOR_NS,
     ],
     port_forwards="%s:8080" % os.getenv("OPERATOR_HEALTH_PORT", "18080"),
-    resource_deps=["operator-crds-rbac", "export-webhook-ca"],
+    resource_deps=["operator-crds-rbac", "export-webhook-ca", "pki"],
 )
 
 k8s_yaml("tilt/rmapi.yaml")

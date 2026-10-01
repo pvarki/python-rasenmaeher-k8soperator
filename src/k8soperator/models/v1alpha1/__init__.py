@@ -6,6 +6,7 @@ from k8soperator.models.v1alpha1.invite import Invite, InviteSpec, InviteStatus
 from k8soperator.models.v1alpha1.role import Role, RoleSpec, RoleStatus
 from k8soperator.models.v1alpha1.user import (
     BINDINGS_SYNCED_CONDITION,
+    CERTIFICATE_READY_CONDITION,
     BindingObservation,
     User,
     UserSpec,
@@ -23,6 +24,7 @@ __all__ = [
     "API_VERSION",
     "BINDINGS_SYNCED_CONDITION",
     "BindingObservation",
+    "CERTIFICATE_READY_CONDITION",
     "Group",
     "GroupSpec",
     "GroupStatus",

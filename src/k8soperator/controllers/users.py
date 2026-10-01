@@ -1,10 +1,12 @@
-"""User controller: resolve role and group name refs into status."""
+"""User controller: resolve role and group name refs, and issue the user's mTLS certificate."""
 
 from collections.abc import Sequence
 
 from cloudcoil.admission import AdmissionDenied, AdmissionRequest
 from cloudcoil.controller import Context, Controller, ResourceKey
+from cloudcoil.models.cert_manager.v1 import Certificate
 
+from k8soperator.controllers._certificates import reconcile_certificate
 from k8soperator.controllers._events import recorder
 from k8soperator.controllers._refs import mark_resolved, referrers_of, resolve_refs
 from k8soperator.models.v1alpha1 import (
@@ -17,7 +19,7 @@ from k8soperator.models.v1alpha1 import (
     is_synced,
 )
 
-users = Controller(User, name="users", events=recorder("users"))
+users = Controller(User, name="users", owns=(Certificate,), events=recorder("users"))
 
 
 @users.validate(operations=("DELETE",))
@@ -54,6 +56,7 @@ async def reconcile_user(user: User, ctx: Context[User]) -> None:
     groups = resolve_refs(ctx, Group, user.spec.group_refs)
     mark_resolved(ctx)
     ctx.set_status(roles=roles, groups=groups)
+    await reconcile_certificate(user, ctx)
 
 
 def observe_bindings(user: User, bindings: Sequence[UserBinding]) -> tuple[list[BindingObservation], list[str]]:

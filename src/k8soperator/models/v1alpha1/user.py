@@ -12,6 +12,7 @@ from cloudcoil.resources import Resource
 from k8soperator.models.v1alpha1.common import API_VERSION, ObjectRef, PlatformStatus, ResolvedRef
 
 BINDINGS_SYNCED_CONDITION = "BindingsSynced"
+CERTIFICATE_READY_CONDITION = "CertificateReady"
 
 
 class BindingObservation(BaseModel):
