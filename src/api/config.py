@@ -16,6 +16,8 @@ class Config(BaseSettings):
     jwt_lifetime: int = 60 * 60 * 4  # 4 hours, in seconds
     jwt_issuer: str = "rmapi"
 
+    invite_code_length: int = 8
+
     @property
     def deployment(self) -> str:
         """First DNS label, e.g. localmaeher."""

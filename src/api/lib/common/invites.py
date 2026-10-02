@@ -5,9 +5,10 @@ from cloudcoil.apimachinery import ObjectMeta
 from cloudcoil.controller import get_condition
 from cloudcoil.errors import ResourceConflict
 
+from api.config import config
 from api.lib.common.codes import generate_code
 from k8soperator.models.v1alpha1.common import API_VERSION
-from k8soperator.models.v1alpha1.invite import Invite, InviteStatus
+from k8soperator.models.v1alpha1.invite import Invite, InviteSpec, InviteStatus
 from k8soperator.models.v1alpha1.user import User, UserSpec
 
 APPROVAL_CODE_LENGTH = 8
@@ -47,6 +48,25 @@ async def list_invites() -> list[Invite]:
         if not invite.spec.auto_approve:
             invites.append(invite)
     return invites
+
+
+async def unique_invite_code() -> str:
+    """Generated code that no invite has yet."""
+    taken = set()
+    async for invite in await Invite.async_list():
+        taken.add(invite.spec.code)
+    return generate_code(config.invite_code_length, taken)
+
+
+async def create_invite(spec: InviteSpec) -> Invite:
+    """Create an invite with a generated name."""
+    invite = Invite(
+        api_version=API_VERSION,
+        kind="Invite",
+        metadata=ObjectMeta(generate_name="invite-"),
+        spec=spec,
+    )
+    return await invite.async_create()
 
 
 async def redeem(code: str, callsign: str) -> User:
