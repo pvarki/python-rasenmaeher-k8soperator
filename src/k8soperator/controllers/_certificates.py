@@ -13,7 +13,6 @@ from cryptography.hazmat.primitives import serialization
 
 from k8soperator.models.v1alpha1 import User
 from k8soperator.models.v1alpha1.user import CERTIFICATE_READY_CONDITION
-from api.config import config
 
 EXTERNAL_CERT_NAMESPACE = "opendefence-external-certs"
 EXTERNAL_CERT_ISSUER = "external-ca-issuer"
@@ -46,7 +45,7 @@ def desired_certificate(user: User) -> Certificate:
         spec=CertificateSpec(
             secret_name=secret_name(user),
             common_name=user.spec.callsign,
-            duration=config.user_cert_duration,
+            duration="8760h",
             private_key=PrivateKey(algorithm="ECDSA", size=256, encoding="PKCS8", rotation_policy="Never"),
             usages=["digital signature", "content commitment", "key encipherment", "client auth"],
             issuer_ref=IssuerRef(name=EXTERNAL_CERT_ISSUER, kind="ClusterIssuer", group="cert-manager.io"),

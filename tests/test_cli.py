@@ -34,7 +34,7 @@ def test_healthcheck_prints_response(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(console.httpx, "get", _fake_get(200, {"dns": "localmaeher.dev.pvarki.fi"}, seen))
     result = CliRunner().invoke(rmcli, ["--api-url", "http://localhost:18000/", "healthcheck"])
     assert result.exit_code == 0, result.output
-    assert seen == ["http://localhost:18000/api/v1/healthcheck"]
+    assert seen == ["http://localhost:18000/api/v3/healthcheck"]
     assert '"dns": "localmaeher.dev.pvarki.fi"' in result.output
 
 
@@ -44,7 +44,7 @@ def test_healthcheck_uses_env_url(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(console.httpx, "get", _fake_get(200, {}, seen))
     result = CliRunner().invoke(rmcli, ["healthcheck"], env={"RMCLI_API_URL": "http://rmapi:8000"})
     assert result.exit_code == 0, result.output
-    assert seen == ["http://rmapi:8000/api/v1/healthcheck"]
+    assert seen == ["http://rmapi:8000/api/v3/healthcheck"]
 
 
 def test_healthcheck_http_error(monkeypatch: pytest.MonkeyPatch) -> None:

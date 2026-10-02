@@ -7,8 +7,12 @@ class Config(BaseSettings):
     """rmapi configuration"""
 
     model_config = SettingsConfigDict(env_prefix="RMAPI_")
-    user_cert_duration: str = "8760h"
     dns: str = "localmaeher.dev.pvarki.fi"
+
+    @property
+    def deployment(self) -> str:
+        """First DNS label, e.g. localmaeher."""
+        return self.dns.split(".", maxsplit=1)[0]
 
 
 config = Config()
