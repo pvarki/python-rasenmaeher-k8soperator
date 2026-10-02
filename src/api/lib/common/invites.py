@@ -53,7 +53,7 @@ def _used(invite: Invite) -> int:
 
 
 def _is_ready(invite: Invite) -> bool:
-    ready = get_condition(invite, "Ready")
+    ready = get_condition(invite, "ReferencesResolved")
     return ready is not None and ready.status == "True"
 
 
