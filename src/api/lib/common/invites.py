@@ -1,4 +1,4 @@
-"""Redeeming invites into users."""
+"""Managing invites and redeeming them into users."""
 
 from datetime import UTC, datetime
 from cloudcoil.apimachinery import ObjectMeta
@@ -22,13 +22,31 @@ class CallsignTaken(Exception):
     """A user with the callsign already exists"""
 
 
-async def find_invite(code: str) -> Invite | None:
-    """Invite with the code, if it can still be redeemed."""
+async def get_invite(code: str, include_auto_approve: bool = False) -> Invite | None:
+    """Invite with the code in any state, auto-approving ones only if included."""
     # TODO: A better way to do this?
     async for invite in await Invite.async_list():
-        if invite.spec.code == code and _is_redeemable(invite):
-            return invite
+        if invite.spec.code != code:
+            continue
+        if invite.spec.auto_approve and not include_auto_approve:
+            return None
+        return invite
     return None
+
+
+async def find_invite(code: str) -> Invite | None:
+    """Invite with the code, if it can still be redeemed."""
+    invite = await get_invite(code, include_auto_approve=True)
+    return invite if invite is not None and is_redeemable(invite) else None
+
+
+async def list_invites() -> list[Invite]:
+    """Invites in any state, except auto-approving ones."""
+    invites = []
+    async for invite in await Invite.async_list():
+        if not invite.spec.auto_approve:
+            invites.append(invite)
+    return invites
 
 
 async def redeem(code: str, callsign: str) -> User:
@@ -42,7 +60,8 @@ async def redeem(code: str, callsign: str) -> User:
     return await user.async_create()
 
 
-def _used(invite: Invite) -> int:
+def used_count(invite: Invite) -> int:
+    """Times the invite has been redeemed."""
     return invite.status.used if invite.status else 0
 
 
@@ -51,9 +70,10 @@ def _is_ready(invite: Invite) -> bool:
     return ready is not None and ready.status == "True"
 
 
-def _is_redeemable(invite: Invite) -> bool:
+def is_redeemable(invite: Invite) -> bool:
+    """Whether the invite is ready, not expired and not used up."""
     expired = invite.spec.valid_until is not None and invite.spec.valid_until <= datetime.now(UTC)
-    used_up = invite.spec.use_count != UNLIMITED and _used(invite) >= invite.spec.use_count
+    used_up = invite.spec.use_count != UNLIMITED and used_count(invite) >= invite.spec.use_count
     return _is_ready(invite) and not expired and not used_up
 
 
