@@ -32,6 +32,20 @@ class CreateInviteRequest(BaseModel):
         )
 
 
+class UpdateInviteRequest(BaseModel):
+    """Invite changes, only the sent fields change."""
+
+    role_refs: list[ObjectRef] = Field(default_factory=list, alias="roleRefs")
+    group_refs: list[ObjectRef] = Field(default_factory=list, alias="groupRefs")
+    use_count: int = Field(default=-1, ge=-1, alias="useCount")
+    valid_until: datetime | None = Field(default=None, alias="validUntil")
+
+    def apply(self, spec: InviteSpec) -> InviteSpec:
+        """InviteSpec with the sent fields changed."""
+        changes = self.model_dump(by_alias=True, exclude_unset=True)
+        return InviteSpec.model_validate(spec.model_dump(by_alias=True) | changes)
+
+
 class InviteResponse(BaseModel):
     """Invite, as shown to admins."""
 

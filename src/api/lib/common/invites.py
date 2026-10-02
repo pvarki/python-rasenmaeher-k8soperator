@@ -69,6 +69,17 @@ async def create_invite(spec: InviteSpec) -> Invite:
     return await invite.async_create()
 
 
+async def update_invite(invite: Invite, spec: InviteSpec) -> Invite:
+    """Replace the invite spec, failing if the invite changed since it was read."""
+    invite.spec = spec
+    return await invite.async_update()
+
+
+async def delete_invite(invite: Invite) -> None:
+    """Delete the invite."""
+    await invite.async_remove()
+
+
 async def redeem(code: str, callsign: str) -> User:
     """Create a user from the invite code, using one use of the invite."""
     invite = await find_invite(code)
