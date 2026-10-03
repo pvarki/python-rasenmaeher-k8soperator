@@ -8,6 +8,7 @@ from cloudcoil.errors import ResourceNotFound
 
 from api.config import config
 from api.lib.certificates.pfx import build_pfx
+from api.routes.certificates.schema import PFX_MEDIA_TYPE, PFX_RESPONSES, Callsign
 from k8soperator.controllers._certificates import EXTERNAL_CERT_NAMESPACE, secret_name
 from k8soperator.models.v1alpha1.user import User
 
@@ -18,9 +19,9 @@ CERTIFICATE_NOT_ISSUED_MESSAGE = "Certificate not issued yet."
 USER_NOT_FOUND_MESSAGE = "User {callsign} not found."
 
 
-@router.get("/{callsign}.pfx")
+@router.get("/{callsign}.pfx", response_class=Response, responses=PFX_RESPONSES)
 async def get_user_pfx(
-    callsign: str,
+    callsign: Callsign,
 ) -> Response:
     """Retrieve user certificate in the form .pfx"""
     try:
@@ -38,6 +39,6 @@ async def get_user_pfx(
         content=await asyncio.to_thread(
             build_pfx, user.spec.callsign, base64.b64decode(data["tls.key"]), base64.b64decode(data["tls.crt"])
         ),
-        media_type="application/x-pkcs12",
+        media_type=PFX_MEDIA_TYPE,
         headers={"Content-Disposition": f'attachment; filename="{user.spec.callsign}_{config.deployment}.pfx"'},
     )
