@@ -12,6 +12,7 @@ from cloudcoil.resources import Resource
 from k8soperator.models.v1alpha1.common import API_VERSION, ObjectRef, PlatformStatus, ResolvedRef
 
 BINDINGS_SYNCED_CONDITION = "BindingsSynced"
+CERTIFICATE_READY_CONDITION = "CertificateReady"
 
 
 class BindingObservation(BaseModel):
@@ -40,6 +41,7 @@ class UserSpec(BaseModel):
     callsign: Annotated[str, PrinterColumn(name="Callsign")] = Field(
         min_length=1,
         description="Unique callsign used to identify the user on the platform.",
+        pattern=r"^[a-z0-9]{3,30}$",
     )
     revoked_at: Annotated[datetime | None, PrinterColumn(name="Revoked")] = Field(
         default=None,

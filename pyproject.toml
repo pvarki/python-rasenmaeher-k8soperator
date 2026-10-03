@@ -1,6 +1,6 @@
 [project]
 name = "rmk8soperator"
-version = "0.1.3+261002"
+version = "0.2.0+261003"
 description = "K8s Operator and CRDs with core RASENMAEHER entities"
 authors = [{name="Eero af Heurlin", email="eero.afheurlin@iki.fi" }]
 homepage = "https://github.com/pvarki/python-rasenmaeher-k8soperator"
@@ -11,7 +11,8 @@ requires-python = ">=3.14,<4.0"
 dependencies = [
     "libadvian>=1.7,<2.0",
     "click>=8.1,<9.0",
-    "cloudcoil[operator]>=0.8,<1.0",
+    "cloudcoil[operator,cert-manager,kubernetes]>=0.8,<1.0",
+    "cryptography>=45,<47",
     "fastapi>=0.115,<1.0",
     "httpx>=0.28,<1.0",
     "pydantic-settings>=2.0,<3.0",

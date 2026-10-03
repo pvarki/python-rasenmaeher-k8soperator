@@ -15,6 +15,7 @@ load("ext://namespace", "namespace_create")
 load("ext://helm_resource", "helm_resource", "helm_repo")
 
 OPERATOR_NS = "opendefence-system"
+EXTERNAL_CERTS_NS = "opendefence-external-certs"
 OPERATOR_IMAGE = "rmk8soperator"
 KIND_CONTEXT = "kind-rmk8soperator"
 CA_FILE = "tilt/.certs/ca.crt"
@@ -50,6 +51,10 @@ helm_resource(
         CERT_MANAGER_VERSION,
         "--set",
         "crds.enabled=true",
+        "--set",
+        "crds.enabled=true",
+        "--set",
+        "enableCertificateOwnerRef=true",
     ],
     resource_deps=["jetstack"],
 )
@@ -80,6 +85,25 @@ k8s_resource(
         "operator-tls:certificate:%s" % OPERATOR_NS,
     ],
     resource_deps=["cert-manager", "operator-ns"],
+)
+
+namespace_create(EXTERNAL_CERTS_NS)
+k8s_resource(
+    new_name="user-certs-ns",
+    objects=["%s:Namespace:default" % EXTERNAL_CERTS_NS],
+)
+
+k8s_yaml("tilt/pki.yaml")
+k8s_resource(
+    new_name="pki",
+    objects=[
+        "selfsigned-issuer:clusterissuer",
+        "external-root-ca:certificate:cert-manager",
+        "external-root-issuer:clusterissuer",
+        "external-ca:certificate:cert-manager",
+        "external-ca-issuer:clusterissuer",
+    ],
+    resource_deps=["cert-manager"],
 )
 
 k8s_yaml(
@@ -137,8 +161,10 @@ k8s_resource(
         "opendefence-platform.%s:clusterrolebinding:default" % OPERATOR_NS,
         "opendefence-platform.%s:role:%s" % (OPERATOR_NS, OPERATOR_NS),
         "opendefence-platform.%s:rolebinding:%s" % (OPERATOR_NS, OPERATOR_NS),
+        "opendefence-platform.%s:role:%s" % (OPERATOR_NS, EXTERNAL_CERTS_NS),
+        "opendefence-platform.%s:rolebinding:%s" % (OPERATOR_NS, EXTERNAL_CERTS_NS),
     ],
-    resource_deps=["operator-ns"],
+    resource_deps=["operator-ns", "user-certs-ns"],
 )
 
 live_update_steps = [
@@ -180,15 +206,22 @@ k8s_resource(
         % OPERATOR_NS,
     ],
     port_forwards="%s:8080" % os.getenv("OPERATOR_HEALTH_PORT", "18080"),
-    resource_deps=["operator-crds-rbac", "export-webhook-ca"],
+    resource_deps=["operator-crds-rbac", "export-webhook-ca", "pki"],
 )
 
 k8s_yaml("tilt/rmapi.yaml")
 k8s_resource(
     "rmapi",
-    objects=["rmapi:ingressroute:%s" % OPERATOR_NS],
+    objects=[
+        "rmapi:ingressroute:%s" % OPERATOR_NS,
+        "rmapi:serviceaccount:%s" % OPERATOR_NS,
+        "rmapi-users:clusterrole",
+        "rmapi-users:clusterrolebinding",
+        "rmapi-user-certs:role:%s" % EXTERNAL_CERTS_NS,
+        "rmapi-user-certs:rolebinding:%s" % EXTERNAL_CERTS_NS,
+    ],
     port_forwards="%s:8000" % os.getenv("RMAPI_FORWARD_PORT", "18000"),
-    resource_deps=["public-tls"],
+    resource_deps=["public-tls", "user-certs-ns"],
 )
 
 local_resource(

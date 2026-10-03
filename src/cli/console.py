@@ -47,7 +47,7 @@ def rmcli(ctx: click.Context, loglevel: int, verbose: int, api_url: str) -> None
 @click.pass_obj
 def healthcheck(api_url: str, timeout: float) -> None:
     """Call the API healthcheck endpoint and print its response."""
-    url = f"{api_url}/api/v1/healthcheck"
+    url = f"{api_url}/api/v3/healthcheck"
     LOGGER.debug("GET %s", url)
     try:
         response = httpx.get(url, timeout=timeout)
