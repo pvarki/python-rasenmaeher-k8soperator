@@ -10,13 +10,14 @@ from cloudcoil.apimachinery import ObjectMeta
 from cloudcoil.controller import Context
 from cloudcoil.models.cert_manager.v1 import Certificate, CertificateStatus, ConditionModel
 from cloudcoil.models.kubernetes.core.v1 import Secret
+from cloudcoil.resources import Resource
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.x509.oid import NameOID
 
 from k8soperator.app import app
-from src.k8soperator.controllers._certificates import (
+from k8soperator.controllers._certificates import (
     EXTERNAL_CERT_ISSUER,
     EXTERNAL_CERT_NAMESPACE,
     ISSUED_REASON,
@@ -30,8 +31,8 @@ from src.k8soperator.controllers._certificates import (
     secret_name,
     wants_certificate,
 )
-from src.k8soperator.models.v1alpha1.common import API_VERSION
-from src.k8soperator.models.v1alpha1.user import CERTIFICATE_READY_CONDITION, User, UserSpec
+from k8soperator.models.v1alpha1.common import API_VERSION
+from k8soperator.models.v1alpha1.user import CERTIFICATE_READY_CONDITION, User, UserSpec
 from k8soperator.models.v1alpha1 import (
     ObjectRef,
 )
@@ -39,14 +40,15 @@ from tests.conftest import FakeClient, FakeContext
 
 CALLSIGN = "testuser"
 
+
 def _user(
-        name: str, 
-        *, 
-        roles: list[str] | None = None, 
-        groups: list[str] | None = None,
-        approved_at: datetime | None = None,
-        revoked_at: datetime | None = None,
-    ) -> User:
+    name: str,
+    *,
+    roles: list[str] | None = None,
+    groups: list[str] | None = None,
+    approved_at: datetime | None = None,
+    revoked_at: datetime | None = None,
+) -> User:
     return User(
         api_version=API_VERSION,
         kind="User",
@@ -56,7 +58,7 @@ def _user(
             role_refs=[ObjectRef(name=item) for item in roles or []],
             group_refs=[ObjectRef(name=item) for item in groups or []],
             approved_at=approved_at,
-            revoked_at=revoked_at
+            revoked_at=revoked_at,
         ),
     )
 
@@ -116,12 +118,16 @@ def test_wants_certificate() -> None:
 
 def test_desired_certificate() -> None:
     """Name, namespace, CN=callsign, ECDSA P-256, rotationPolicy Never, usages, issuerRef."""
-    certificate = desired_certificate(_user(CALLSIGN, approved_at=datetime.now()))
-    assert certificate.metadata.name == "user-testuser"
+    user = _user(CALLSIGN, approved_at=datetime.now(UTC))
+    certificate = desired_certificate(user)
+    assert certificate.metadata is not None
+    assert certificate.metadata.name == certificate_name(user)
     assert certificate.metadata.namespace == EXTERNAL_CERT_NAMESPACE
     spec = certificate.spec
-    assert spec.secret_name == "user-testuser"
+    assert spec is not None
+    assert spec.secret_name == secret_name(user)
     assert spec.common_name == CALLSIGN
+    assert spec.private_key is not None
     assert spec.private_key.algorithm == "ECDSA"
     assert spec.private_key.size == 256
     assert spec.private_key.rotation_policy == "Never"
@@ -159,6 +165,7 @@ def test_public_key_fingerprint_requires_tls_crt() -> None:
 def _observed_certificate(user: User, *, ready: bool) -> Certificate:
     """The desired Certificate as cert-manager would report it back."""
     certificate = desired_certificate(user)
+    assert certificate.metadata is not None
     certificate.metadata.generation = 1
     certificate.status = CertificateStatus(
         conditions=[ConditionModel(type="Ready", status="True" if ready else "False", observed_generation=1)]
@@ -180,7 +187,9 @@ async def test_reconcile_certificate_waits_until_ready() -> None:
     """Not Ready -> CertificateReady=False reason Issuing, no publicKey."""
     user = _user(CALLSIGN, approved_at=datetime.now(UTC))
     certificate = _observed_certificate(user, ready=False)
-    ctx = FakeContext(clients={Certificate: FakeClient({(EXTERNAL_CERT_NAMESPACE, certificate.name): certificate})})
+    ctx = FakeContext(
+        clients={Certificate: FakeClient({(EXTERNAL_CERT_NAMESPACE, certificate_name(user)): certificate})}
+    )
 
     await reconcile_certificate(user, cast(Context[User], ctx))
 
@@ -198,8 +207,8 @@ async def test_reconcile_certificate_records_ready_certificate() -> None:
     secret = _tls_secret(leaf_key)
     ctx = FakeContext(
         clients={
-            Certificate: FakeClient({(EXTERNAL_CERT_NAMESPACE, certificate.name): certificate}),
-            Secret: FakeClient({(EXTERNAL_CERT_NAMESPACE, secret.name): secret}),
+            Certificate: FakeClient({(EXTERNAL_CERT_NAMESPACE, certificate_name(user)): certificate}),
+            Secret: FakeClient({(EXTERNAL_CERT_NAMESPACE, secret_name(user)): secret}),
         }
     )
 
@@ -220,7 +229,7 @@ async def test_reconcile_certificate_removes_when_not_wanted(approved: bool, rev
     now = datetime.now(UTC)
     user = _user(CALLSIGN, approved_at=now if approved else None, revoked_at=now if revoked else None)
     certificate = _observed_certificate(user, ready=True)
-    client = FakeClient({(EXTERNAL_CERT_NAMESPACE, certificate.name): certificate})
+    client: FakeClient[Resource] = FakeClient({(EXTERNAL_CERT_NAMESPACE, certificate_name(user)): certificate})
     ctx = FakeContext(clients={Certificate: client})
 
     await reconcile_certificate(user, cast(Context[User], ctx))

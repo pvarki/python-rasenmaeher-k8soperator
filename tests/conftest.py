@@ -73,6 +73,8 @@ class FakeContext:
     async def ensure[U: Resource](self, desired: U) -> U:
         """Record the desired child; return the stored observed object if one is seeded."""
         self.ensured.append(desired)
+        if desired.name is None:
+            return desired
         client = await self.client(type(desired))
         try:
             return await client.get(desired.name, namespace=desired.namespace)
