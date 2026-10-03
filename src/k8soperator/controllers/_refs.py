@@ -7,7 +7,7 @@ from typing import Literal, NoReturn, Protocol
 from cloudcoil.controller import ResourceKey, TerminalError, Wait
 from cloudcoil.resources import Resource
 
-from rmk8soperator.models.v1alpha1.common import ObjectRef, ResolvedRef
+from k8soperator.models.v1alpha1.common import ObjectRef, ResolvedRef
 
 type ResourceRefs = Sequence[ObjectRef] | ObjectRef | None
 

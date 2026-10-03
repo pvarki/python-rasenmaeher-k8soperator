@@ -1,0 +1,20 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: public-tls
+  namespace: opendefence-system
+spec:
+  secretName: public-tls  # pragma: allowlist secret
+  duration: 8760h
+  renewBefore: 360h
+  commonName: localmaeher.dev.pvarki.fi
+  dnsNames:
+    - localmaeher.dev.pvarki.fi
+    - mtls.localmaeher.dev.pvarki.fi
+  usages:
+    - digital signature
+    - key encipherment
+    - server auth
+  issuerRef:
+    name: operator-ca
+    kind: Issuer

@@ -5,8 +5,8 @@ import logging
 import click
 
 from libadvian.logging import init_logging
-from rmk8soperator import __version__
-from rmk8soperator.app import app
+from k8soperator import __version__
+from k8soperator.app import app
 
 
 LOGGER = logging.getLogger(__name__)

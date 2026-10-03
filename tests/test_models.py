@@ -6,7 +6,7 @@ from typing import Any
 import yaml
 from cloudcoil.crd import CRD
 
-from rmk8soperator.models.v1alpha1 import API_VERSION, Group, Invite, Role, User, UserBinding
+from k8soperator.models.v1alpha1 import API_VERSION, Group, Invite, Role, User, UserBinding
 
 
 def _version(manifest: dict[str, Any]) -> dict[str, Any]:

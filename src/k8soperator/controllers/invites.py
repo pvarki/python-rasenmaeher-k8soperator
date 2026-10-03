@@ -2,9 +2,9 @@
 
 from cloudcoil.controller import Context, Controller, ResourceKey
 
-from rmk8soperator.controllers._events import recorder
-from rmk8soperator.controllers._refs import mark_resolved, referrers_of, resolve_refs
-from rmk8soperator.models.v1alpha1 import Group, Invite, Role
+from k8soperator.controllers._events import recorder
+from k8soperator.controllers._refs import mark_resolved, referrers_of, resolve_refs
+from k8soperator.models.v1alpha1 import Group, Invite, Role
 
 invites = Controller(Invite, name="invites", events=recorder("invites"))
 

@@ -20,8 +20,12 @@ RUN export RESOLVED_VERSIONS=`pyenv_resolve $PYTHON_VERSIONS` \
 COPY ./uv.lock ./pyproject.toml ./README.rst ./.pre-commit-config.yaml /app/
 COPY ./docker /app/docker/
 WORKDIR /app
-RUN mkdir -p src/rmk8soperator \
-    && echo '"""placeholder"""' >src/rmk8soperator/__init__.py \
+RUN mkdir -p src/k8soperator \
+    && echo '"""placeholder"""' >src/k8soperator/__init__.py \
+    && mkdir -p src/api \
+    && echo '"""placeholder"""' >src/api/__init__.py \
+    && mkdir -p src/cli \
+    && echo '"""placeholder"""' >src/cli/__init__.py \
     && uv sync --locked \
     && export SKIP="pyrefly,uv-lock" \
     && uv run --locked docker/prek_init.sh \
@@ -132,8 +136,12 @@ FROM builder_base as devel_build
 # Install deps
 WORKDIR /pysetup
 RUN . /.venv/bin/activate \
-    && mkdir -p src/rmk8soperator \
-    && echo '"""placeholder"""' >src/rmk8soperator/__init__.py \
+    && mkdir -p src/k8soperator \
+    && echo '"""placeholder"""' >src/k8soperator/__init__.py \
+    && mkdir -p src/api \
+    && echo '"""placeholder"""' >src/api/__init__.py \
+    && mkdir -p src/cli \
+    && echo '"""placeholder"""' >src/cli/__init__.py \
     && uv sync --locked \
     && true
 

@@ -1,0 +1,22 @@
+ports:
+  web:
+    hostPort: 80
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    hostPort: 443
+
+service:
+  spec:
+    type: ClusterIP
+
+nodeSelector:
+  ingress-ready: "true"
+
+updateStrategy:
+  type: Recreate
+  rollingUpdate: null

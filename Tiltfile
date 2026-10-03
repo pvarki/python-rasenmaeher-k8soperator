@@ -19,6 +19,8 @@ OPERATOR_IMAGE = "rmk8soperator"
 KIND_CONTEXT = "kind-rmk8soperator"
 CA_FILE = "tilt/.certs/ca.crt"
 CERT_MANAGER_VERSION = "v1.21.1"
+TRAEFIK_NS = "traefik-system"
+TRAEFIK_VERSION = "41.6.0"
 watch_file("Taskfile.yml")
 RUNTIME = str(local(["task", "--silent", "runtime"], quiet=True)).strip()
 if RUNTIME == "podman":
@@ -52,6 +54,22 @@ helm_resource(
     resource_deps=["jetstack"],
 )
 
+helm_repo("traefik-charts", "https://traefik.github.io/charts")
+helm_resource(
+    "traefik",
+    "traefik-charts/traefik",
+    namespace=TRAEFIK_NS,
+    flags=[
+        "--create-namespace",
+        "--version",
+        TRAEFIK_VERSION,
+        "-f",
+        "tilt/traefik/values-traefik.yaml",
+    ],
+    deps=["tilt/traefik/values-traefik.yaml"],
+    resource_deps=["traefik-charts"],
+)
+
 k8s_yaml("tilt/webhook-certs.yaml")
 k8s_resource(
     new_name="operator-certs",
@@ -62,6 +80,21 @@ k8s_resource(
         "operator-tls:certificate:%s" % OPERATOR_NS,
     ],
     resource_deps=["cert-manager", "operator-ns"],
+)
+
+k8s_yaml(
+    [
+        "tilt/traefik/public-tls.certificate.yaml",
+        "tilt/traefik/public-tls.tlsstore.yaml",
+    ]
+)
+k8s_resource(
+    new_name="public-tls",
+    objects=[
+        "public-tls:certificate:%s" % OPERATOR_NS,
+        "default:tlsstore:%s" % OPERATOR_NS,
+    ],
+    resource_deps=["operator-certs", "traefik"],
 )
 
 local_resource(
@@ -81,7 +114,7 @@ watch_file(CA_FILE)
 if not os.path.exists(CA_FILE):
     exit("Waiting for cert-manager to issue the local webhook CA")
 
-watch_file("src/rmk8soperator/models")
+watch_file("src/k8soperator/models")
 k8s_yaml(
     local(
         "uv run --locked rmk8soperator manifests --image %s --ca-file %s"
@@ -148,6 +181,14 @@ k8s_resource(
     ],
     port_forwards="%s:8080" % os.getenv("OPERATOR_HEALTH_PORT", "18080"),
     resource_deps=["operator-crds-rbac", "export-webhook-ca"],
+)
+
+k8s_yaml("tilt/rmapi.yaml")
+k8s_resource(
+    "rmapi",
+    objects=["rmapi:ingressroute:%s" % OPERATOR_NS],
+    port_forwards="%s:8000" % os.getenv("RMAPI_FORWARD_PORT", "18000"),
+    resource_deps=["public-tls"],
 )
 
 local_resource(
