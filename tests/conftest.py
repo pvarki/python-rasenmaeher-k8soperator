@@ -35,6 +35,12 @@ class FakeClient[T: Resource]:
         self._objects = objects or {}
         self.deleted: list[tuple[str | None, str]] = []
 
+    async def get(self, name: str, namespace: str | None = None) -> T:
+        key = (namespace, name)
+        if key not in self._objects:
+            raise ResourceNotFound(f"{namespace}/{name} not found")
+        return self._objects[key]
+
     async def delete(self, name: str, namespace: str | None = None) -> T:
         key = (namespace, name)
         if key not in self._objects:
@@ -55,9 +61,23 @@ class FakeContext:
         self.clients = clients or {}
         self.status: dict[str, Any] = {}
         self.conditions: list[tuple[str, bool | Literal["Unknown"], str, str]] = []
+        self.ensured: list[Resource] = []
 
     async def client[U: Resource](self, resource: type[U]) -> FakeClient[U]:
         return self.clients.setdefault(resource, FakeClient())  # type: ignore[return-value]
+
+    async def get[U: Resource](self, resource: type[U], name: str, *, namespace: str | None = None) -> U:
+        client = await self.client(resource)
+        return await client.get(name, namespace=namespace)
+
+    async def ensure[U: Resource](self, desired: U) -> U:
+        """Record the desired child; return the stored observed object if one is seeded."""
+        self.ensured.append(desired)
+        client = await self.client(type(desired))
+        try:
+            return await client.get(desired.name, namespace=desired.namespace)
+        except ResourceNotFound:
+            return desired
 
     def cached[U: Resource](self, resource: type[U]) -> FakeCache[U]:
         cache = self._caches.get(resource)
