@@ -8,26 +8,25 @@ from cloudcoil.errors import ResourceNotFound
 
 from api.config import config
 from api.lib.certificates.pfx import build_pfx
+from api.lib.middleware.jwt import JWTUser
 from api.routes.certificates.schema import PFX_MEDIA_TYPE, PFX_RESPONSES, Callsign
 from k8soperator.controllers._certificates import EXTERNAL_CERT_NAMESPACE, secret_name
-from k8soperator.models.v1alpha1.user import User
 
 
 router = APIRouter(prefix="/certificates", tags=["certificates"])
 
 CERTIFICATE_NOT_ISSUED_MESSAGE = "Certificate not issued yet."
-USER_NOT_FOUND_MESSAGE = "User {callsign} not found."
+FORBIDDEN_MESSAGE = "Only your own certificate can be downloaded."
 
 
 @router.get("/{callsign}.pfx", response_class=Response, responses=PFX_RESPONSES)
 async def get_user_pfx(
     callsign: Callsign,
+    user: JWTUser,
 ) -> Response:
     """Retrieve user certificate in the form .pfx"""
-    try:
-        user = await User.async_get(name=callsign)
-    except ResourceNotFound:
-        raise HTTPException(404, detail=USER_NOT_FOUND_MESSAGE.format(callsign=callsign))
+    if user.name != callsign:
+        raise HTTPException(403, detail=FORBIDDEN_MESSAGE)
     try:
         secret = await Secret.async_get(secret_name(user), EXTERNAL_CERT_NAMESPACE)
     except ResourceNotFound:

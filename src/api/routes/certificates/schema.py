@@ -18,6 +18,7 @@ class ErrorResponse(BaseModel):
 
 PFX_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {"content": {PFX_MEDIA_TYPE: {}}, "description": "PKCS#12 bundle."},
-    404: {"model": ErrorResponse, "description": "User not found."},
+    401: {"model": ErrorResponse, "description": "Not authenticated."},
+    403: {"model": ErrorResponse, "description": "Certificate of another user."},
     409: {"model": ErrorResponse, "description": "Certificate not issued yet."},
 }
