@@ -9,7 +9,7 @@ from cloudcoil.errors import APIError, ResourceConflict
 
 from api.lib.common.codes import generate_code
 from k8soperator.models.v1alpha1.common import API_VERSION
-from k8soperator.models.v1alpha1.invite import Invite
+from k8soperator.models.v1alpha1.invite import Invite, InviteStatus
 from k8soperator.models.v1alpha1.user import User, UserSpec
 
 APPROVAL_CODE_LENGTH = 8
@@ -91,16 +91,9 @@ async def _check_callsign(user: User) -> None:
 
 
 async def _use(invite: Invite) -> None:
-    used = _used(invite)
+    invite.status = invite.status or InviteStatus()
+    invite.status.used += 1
     try:
-        await invite.async_patch(
-            [
-                {"op": "test", "path": "/status/used", "value": used},
-                {"op": "replace", "path": "/status/used", "value": used + 1},
-            ],
-            subresource="status",
-        )
-    except APIError as exc:
-        if exc.status_code != HTTPStatus.UNPROCESSABLE_ENTITY:
-            raise
-        raise InviteNotRedeemable from exc  # Other user got here first
+        await invite.async_update_status()
+    except ResourceConflict as exc:
+        raise InviteNotRedeemable from exc  # Invite changed since it was read
