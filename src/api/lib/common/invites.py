@@ -1,11 +1,9 @@
 """Redeeming invites into users."""
 
 from datetime import UTC, datetime
-from http import HTTPStatus
-
 from cloudcoil.apimachinery import ObjectMeta
 from cloudcoil.controller import get_condition
-from cloudcoil.errors import APIError, ResourceConflict
+from cloudcoil.errors import ResourceConflict
 
 from api.lib.common.codes import generate_code
 from k8soperator.models.v1alpha1.common import API_VERSION
@@ -22,10 +20,6 @@ class InviteNotRedeemable(Exception):
 
 class CallsignTaken(Exception):
     """A user with the callsign already exists"""
-
-
-class InvalidCallsign(Exception):
-    """The callsign is not a valid user name"""
 
 
 async def find_invite(code: str) -> Invite | None:
@@ -67,7 +61,7 @@ def _new_user(invite: Invite, callsign: str) -> User:
     return User(
         api_version=API_VERSION,
         kind="User",
-        metadata=ObjectMeta(name=callsign.lower()),
+        metadata=ObjectMeta(name=callsign),
         spec=UserSpec(
             callsign=callsign,
             role_refs=invite.spec.role_refs,
@@ -79,15 +73,11 @@ def _new_user(invite: Invite, callsign: str) -> User:
 
 
 async def _check_callsign(user: User) -> None:
-    """Fail on a taken or invalid callsign before the invite is used."""
+    """Fail on a taken callsign before the invite is used."""
     try:
         await user.async_create(dry_run=True)
     except ResourceConflict as exc:
         raise CallsignTaken from exc
-    except APIError as exc:
-        if exc.status_code != HTTPStatus.UNPROCESSABLE_ENTITY:
-            raise
-        raise InvalidCallsign from exc
 
 
 async def _use(invite: Invite) -> None:

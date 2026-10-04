@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, status
 
-from api.lib.common.invites import CallsignTaken, InvalidCallsign, InviteNotRedeemable, find_invite, redeem
+from api.lib.common.invites import CallsignTaken, InviteNotRedeemable, find_invite, redeem
 from api.lib.common.jwt import issue
 from api.lib.middleware.jwt import JWTUser
 from api.routes.enrollment.schema import CheckRequest, CheckResponse, EnrollmentStatus, EnrollRequest, EnrollResponse
@@ -28,8 +28,6 @@ async def enroll(request: EnrollRequest) -> EnrollResponse:
         raise HTTPException(status.HTTP_404_NOT_FOUND) from exc
     except CallsignTaken as exc:
         raise HTTPException(status.HTTP_409_CONFLICT) from exc
-    except InvalidCallsign as exc:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT) from exc
     return EnrollResponse(status=EnrollmentStatus.from_resource(user), token=issue(user))
 
 

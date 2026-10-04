@@ -7,7 +7,7 @@ from pydantic import Field
 from cloudcoil.pydantic import BaseModel
 
 from api.lib.common.jwt import Token
-from k8soperator.models.v1alpha1.user import User
+from k8soperator.models.v1alpha1.user import CALLSIGN_PATTERN, User
 
 
 class CheckRequest(BaseModel):
@@ -26,7 +26,7 @@ class EnrollRequest(BaseModel):
     """Invite code to redeem and the callsign to take."""
 
     code: str
-    callsign: str = Field(min_length=1)
+    callsign: str = Field(pattern=CALLSIGN_PATTERN)
 
 
 class EnrollmentStatus(BaseModel):
