@@ -13,6 +13,7 @@
 load("ext://podman", "podman_build")
 load("ext://namespace", "namespace_create")
 load("ext://helm_resource", "helm_resource", "helm_repo")
+load("ext://uibutton", "cmd_button", "text_input")
 
 OPERATOR_NS = "opendefence-system"
 EXTERNAL_CERTS_NS = "opendefence-external-certs"
@@ -215,10 +216,11 @@ k8s_resource(
     objects=[
         "rmapi:ingressroute:%s" % OPERATOR_NS,
         "rmapi:serviceaccount:%s" % OPERATOR_NS,
-        "rmapi-users:clusterrole",
-        "rmapi-users:clusterrolebinding",
+        "rmapi:clusterrole:default",
+        "rmapi:clusterrolebinding:default",
         "rmapi-user-certs:role:%s" % EXTERNAL_CERTS_NS,
         "rmapi-user-certs:rolebinding:%s" % EXTERNAL_CERTS_NS,
+        "rmapi-jwt:certificate:%s" % OPERATOR_NS,
     ],
     port_forwards="%s:8000" % os.getenv("RMAPI_FORWARD_PORT", "18000"),
     resource_deps=["public-tls", "user-certs-ns"],
@@ -248,4 +250,37 @@ k8s_resource(
     resource_deps=["webhook-ready"],
     trigger_mode=TRIGGER_MODE_MANUAL,
     auto_init=False,
+)
+
+k8s_yaml(
+    [
+        "examples/invites/first-admin.yaml",
+        "examples/invites/users.yaml",
+        "examples/invites/expired.yaml",
+    ]
+)
+k8s_resource(
+    new_name="invites",
+    objects=[
+        "first-admin:Invite:default",
+        "users:Invite:default",
+        "expired:Invite:default",
+    ],
+    resource_deps=["webhook-ready"],
+    trigger_mode=TRIGGER_MODE_MANUAL,
+    auto_init=False,
+)
+
+cmd_button(
+    "approve-user",
+    resource="invites",
+    argv=[
+        "sh",
+        "-c",
+        'kubectl --context %s patch oduser "$USER_NAME" --type merge --patch-file examples/users/approve.yaml'
+        % KIND_CONTEXT,
+    ],
+    text="Approve user",
+    icon_name="how_to_reg",
+    inputs=[text_input("USER_NAME", "User name")],
 )

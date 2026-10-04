@@ -5,9 +5,11 @@ from typing import Annotated, Any
 from fastapi import Path
 from pydantic import BaseModel
 
+from k8soperator.models.v1alpha1.user import CALLSIGN_PATTERN
+
 PFX_MEDIA_TYPE = "application/x-pkcs12"
 
-Callsign = Annotated[str, Path(pattern=r"^[a-z0-9]{3,30}$", description="Callsign of the user.")]
+Callsign = Annotated[str, Path(pattern=CALLSIGN_PATTERN, description="Callsign of the user.")]
 
 
 class ErrorResponse(BaseModel):
@@ -18,6 +20,7 @@ class ErrorResponse(BaseModel):
 
 PFX_RESPONSES: dict[int | str, dict[str, Any]] = {
     200: {"content": {PFX_MEDIA_TYPE: {}}, "description": "PKCS#12 bundle."},
-    404: {"model": ErrorResponse, "description": "User not found."},
+    401: {"model": ErrorResponse, "description": "Not authenticated."},
+    403: {"model": ErrorResponse, "description": "Certificate of another user."},
     409: {"model": ErrorResponse, "description": "Certificate not issued yet."},
 }

@@ -5,4 +5,4 @@ from k8soperator import __version__
 
 def test_version() -> None:
     """Make sure version matches expected"""
-    assert __version__ == "0.2.0+261003"
+    assert __version__ == "0.3.0+261004"
