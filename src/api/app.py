@@ -6,6 +6,7 @@ from api import __version__
 from api.config import config
 from api.routes.certificates.views import router as certificates_router
 from api.routes.enrollment.views import router as enrollment_router
+from api.routes.invites.views import router as invites_router
 
 
 app = FastAPI(
@@ -19,6 +20,7 @@ app = FastAPI(
 v3 = APIRouter(prefix="/api/v3")
 v3.include_router(certificates_router)
 v3.include_router(enrollment_router)
+v3.include_router(invites_router)
 app.include_router(v3)
 
 

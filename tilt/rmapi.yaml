@@ -14,7 +14,7 @@ rules:
     verbs: ["get", "list", "create"]
   - apiGroups: ["platform.opendefence.fi"]
     resources: ["invites"]
-    verbs: ["get", "list", "create"]
+    verbs: ["get", "list", "create", "update", "delete"]
   - apiGroups: ["platform.opendefence.fi"]
     resources: ["invites/status"]
     verbs: ["update"]

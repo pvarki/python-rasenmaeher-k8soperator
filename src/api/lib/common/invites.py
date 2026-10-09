@@ -1,13 +1,14 @@
-"""Redeeming invites into users."""
+"""Managing invites and redeeming them into users."""
 
 from datetime import UTC, datetime
 from cloudcoil.apimachinery import ObjectMeta
 from cloudcoil.controller import get_condition
 from cloudcoil.errors import ResourceConflict
 
+from api.config import config
 from api.lib.common.codes import generate_code
 from k8soperator.models.v1alpha1.common import API_VERSION
-from k8soperator.models.v1alpha1.invite import Invite, InviteStatus
+from k8soperator.models.v1alpha1.invite import Invite, InviteSpec, InviteStatus
 from k8soperator.models.v1alpha1.user import User, UserSpec
 
 APPROVAL_CODE_LENGTH = 8
@@ -22,13 +23,61 @@ class CallsignTaken(Exception):
     """A user with the callsign already exists"""
 
 
-async def find_invite(code: str) -> Invite | None:
-    """Invite with the code, if it can still be redeemed."""
+async def get_invite(code: str, include_auto_approve: bool = False) -> Invite | None:
+    """Invite with the code in any state, auto-approving ones only if included."""
     # TODO: A better way to do this?
     async for invite in await Invite.async_list():
-        if invite.spec.code == code and _is_redeemable(invite):
-            return invite
+        if invite.spec.code != code:
+            continue
+        if invite.spec.auto_approve and not include_auto_approve:
+            return None
+        return invite
     return None
+
+
+async def find_invite(code: str) -> Invite | None:
+    """Invite with the code, if it can still be redeemed."""
+    invite = await get_invite(code, include_auto_approve=True)
+    return invite if invite is not None and is_redeemable(invite) else None
+
+
+async def list_invites() -> list[Invite]:
+    """Invites in any state, except auto-approving ones."""
+    invites = []
+    async for invite in await Invite.async_list():
+        if not invite.spec.auto_approve:
+            invites.append(invite)
+    return invites
+
+
+async def unique_invite_code() -> str:
+    """Generated code that no invite has yet."""
+    taken = set()
+    async for invite in await Invite.async_list():
+        taken.add(invite.spec.code)
+    return generate_code(config.invite_code_length, taken)
+
+
+async def create_invite(spec: InviteSpec) -> Invite:
+    """Create an invite with a generated name."""
+    invite = Invite(
+        api_version=API_VERSION,
+        kind="Invite",
+        metadata=ObjectMeta(generate_name="invite-"),
+        spec=spec,
+    )
+    return await invite.async_create()
+
+
+async def update_invite(invite: Invite, spec: InviteSpec) -> Invite:
+    """Replace the invite spec, failing if the invite changed since it was read."""
+    invite.spec = spec
+    return await invite.async_update()
+
+
+async def delete_invite(invite: Invite) -> None:
+    """Delete the invite."""
+    await invite.async_remove()
 
 
 async def redeem(code: str, callsign: str) -> User:
@@ -42,7 +91,8 @@ async def redeem(code: str, callsign: str) -> User:
     return await user.async_create()
 
 
-def _used(invite: Invite) -> int:
+def used_count(invite: Invite) -> int:
+    """Times the invite has been redeemed."""
     return invite.status.used if invite.status else 0
 
 
@@ -51,9 +101,10 @@ def _is_ready(invite: Invite) -> bool:
     return ready is not None and ready.status == "True"
 
 
-def _is_redeemable(invite: Invite) -> bool:
+def is_redeemable(invite: Invite) -> bool:
+    """Whether the invite is ready, not expired and not used up."""
     expired = invite.spec.valid_until is not None and invite.spec.valid_until <= datetime.now(UTC)
-    used_up = invite.spec.use_count != UNLIMITED and _used(invite) >= invite.spec.use_count
+    used_up = invite.spec.use_count != UNLIMITED and used_count(invite) >= invite.spec.use_count
     return _is_ready(invite) and not expired and not used_up
 
 
